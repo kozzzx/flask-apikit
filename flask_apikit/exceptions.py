@@ -1,13 +1,3 @@
-"""
-@apiDefine E
-@apiSuccess {Number} e 错误码=0
-"""
-"""
-@apiDefine Msg
-@apiSuccess {String} msg 提示信息,支持i18n
-"""
-
-
 class ApiError(Exception):
     """
     @apiDefine ApiError

@@ -4,10 +4,7 @@ from flask.views import MethodView
 from flask_apikit.decorators import api_view
 from flask_apikit.exceptions import ValidateError
 
-try:
-    from marshmallow import Schema
-except ImportError:
-    pass
+from marshmallow import Schema
 
 
 class ApiView(MethodView):
@@ -35,13 +32,10 @@ class ApiView(MethodView):
             json_data = {}
         # 给了验证器,则进行验证
         if isinstance(schema, Schema):
-            if current_app.config.get('USE_MARSHMALLOW'):
-                data, errors = schema.load(json_data)
-                # 有错误则抛出
-                if errors:
-                    raise ValidateError(errors)
-            else:
-                data = json_data
+            data, errors = schema.load(json_data)
+            # 有错误则抛出
+            if errors:
+                raise ValidateError(errors)
         # 没有验证器,直接返回
         else:
             data = json_data
