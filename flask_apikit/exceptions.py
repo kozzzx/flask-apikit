@@ -1,10 +1,7 @@
 class ApiError(Exception):
     """
-    @apiDefine ApiError
-    @apiError (可能的错误) {1} ApiError 未定义的错误
+    所有Api抛出的错误需继承自此错误,才能被捕捉成json返回到前段
     """
-    code = 1
-    message = 'Undefined Error'
 
 
 class ValidateError(ApiError):
