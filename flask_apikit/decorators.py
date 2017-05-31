@@ -96,11 +96,8 @@ def api_view(func):
             # None => {'e':0}
             if resp is None:
                 resp = _api_response()
-            # 字符串 => {'e':0, 'msg':<str>}
-            if isinstance(resp, str):
-                resp = _api_response(message=resp)
             # 如果response是字典,包装成json
-            elif isinstance(resp, dict):
+            if isinstance(resp, dict):
                 resp = _api_response(resp=resp)
             # 其他情况,不处理直接返回resp
             else:
