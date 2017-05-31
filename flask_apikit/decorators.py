@@ -90,18 +90,19 @@ def api_view(func):
             resp = func(*args, **kwargs)
         # 捕获到ApiError
         except ApiError as e:
-            resp = _api_response(code=e.code, message=e.message)
+            resp = (_api_response(code=e.code, message=e.message), e.status_code)
         # 没有错误
         else:
             # None => {'e':0}
             if resp is None:
                 resp = _api_response()
-            # 如果response是字典,包装成json
-            if isinstance(resp, dict):
+            # response是元组，且第一个值为字典
+            elif isinstance(resp, tuple):
+                if len(resp) == 2 and isinstance(resp[0], dict) and isinstance(resp[1], int):
+                    resp = (_api_response(resp=resp[0]), resp[1])
+            # response是字典,包装成json
+            elif isinstance(resp, dict):
                 resp = _api_response(resp=resp)
-            # 其他情况,不处理直接返回resp
-            else:
-                resp = make_response(resp)
         return resp
 
     return wrapper

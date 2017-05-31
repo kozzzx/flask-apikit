@@ -1,7 +1,8 @@
 class ApiError(Exception):
     """
-    所有Api抛出的错误需继承自此错误,才能被捕捉成json返回到前段
+    所有Api抛出的错误需继承自此错误,才能被捕捉,并返回给前端
     """
+    status_code = 200
 
 
 class ValidateError(ApiError):
