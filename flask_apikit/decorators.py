@@ -30,7 +30,7 @@ def crossdomain(origin=None, methods=None, headers=None,
         return options_resp.headers['allow']
 
     def decorator(f):
-        def wrapped_function(*args, **kwargs):
+        def wrapper(*args, **kwargs):
             if automatic_options and request.method == 'OPTIONS':
                 resp = current_app.make_default_options_response()
             else:
@@ -48,7 +48,7 @@ def crossdomain(origin=None, methods=None, headers=None,
             return resp
 
         f.provide_automatic_options = False
-        return update_wrapper(wrapped_function, f)
+        return update_wrapper(wrapper, f)
 
     return decorator
 
