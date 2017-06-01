@@ -10,10 +10,6 @@ from marshmallow import Schema
 class ApiView(MethodView):
     decorators = (api_view,)
 
-    @property
-    def current_user(self):
-        return g.get('current_user')
-
     def get_json(self, schema=None, *args, **kwargs):
         """
         从request获取json数据,没有则返回空字典
