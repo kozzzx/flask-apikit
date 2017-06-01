@@ -1,10 +1,9 @@
-from flask import request, g, current_app
+from flask import request
 from flask.views import MethodView
+from marshmallow import Schema
 
 from flask_apikit.decorators import api_view
 from flask_apikit.exceptions import ValidateError
-
-from marshmallow import Schema
 
 
 class ApiView(MethodView):
