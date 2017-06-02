@@ -53,7 +53,7 @@ def crossdomain(origin=None, methods=None, headers=None,
     return decorator
 
 
-def _api_response(resp=None, code=0, message=None):
+def _api_response(resp=None, error_code=0, message=None):
     """
     将resp转换成json,没有resp则生成空字典
 
@@ -66,7 +66,7 @@ def _api_response(resp=None, code=0, message=None):
     if resp is None:
         resp = {}
     # 加上错误码
-    resp['e'] = code
+    resp['e'] = error_code
     # 加上信息
     if message:
         resp['msg'] = message
@@ -90,7 +90,7 @@ def api_view(func):
             resp = func(*args, **kwargs)
         # 捕获到ApiError
         except ApiError as e:
-            resp = (_api_response(code=e.code, message=e.message), e.status_code)
+            resp = (_api_response(error_code=e.error_code, message=e.message), e.status_code)
         # 没有错误
         else:
             # None => {'e':0}

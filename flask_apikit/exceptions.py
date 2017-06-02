@@ -3,6 +3,8 @@ class ApiError(Exception):
     所有Api抛出的错误需继承自此错误,才能被捕捉,并返回给前端
     """
     status_code = 200
+    error_code = 1
+    message = 'Undefined Error'
 
 
 class ValidateError(ApiError):
@@ -23,7 +25,7 @@ class ValidateError(ApiError):
         }
     }
     """
-    code = 2
+    error_code = 2
 
     def __init__(self, message):
         self.message = message
