@@ -9,12 +9,12 @@ from flask_apikit.exceptions import ValidateError
 class ApiView(MethodView):
     decorators = (api_view,)
 
-    def verify_data(self, schema, data, context=None):
+    def verify_data(self, data, schema, context=None):
         """
         使用schema实例验证数据，有错误时抛出ValidateError
 
-        :param Schema schema: schema实例
         :param dict data: 需要验证的数据
+        :param Schema schema: schema实例
         :param dict context: 传递给schema使用的额外数据，保存在schema的context属性中
         :return:
         """
@@ -46,7 +46,7 @@ class ApiView(MethodView):
             json_data = {}
         # 给了验证器,则进行验证
         if isinstance(schema, Schema):
-            data = self.verify_data(schema, json_data, context)
+            data = self.verify_data(json_data, schema, context)
         # 没有验证器,直接返回
         else:
             data = json_data
