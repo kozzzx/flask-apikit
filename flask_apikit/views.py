@@ -9,12 +9,26 @@ from flask_apikit.exceptions import ValidateError
 class ApiView(MethodView):
     decorators = (api_view,)
 
+    def verify_data(self, schema, data):
+        """
+        使用schema实例验证数据，有错误时抛出ValidateError
+
+        :param Schema schema: schema实例
+        :param dict data: 需要验证的数据
+        :return:
+        """
+        data, errors = schema.load(data)
+        # 有错误则抛出
+        if errors:
+            raise ValidateError(errors)
+        return data
+
     def get_json(self, schema=None, extra_data=None, *args, **kwargs):
         """
         从request获取json数据,没有则返回空字典
         可以使用一个验证器进行数据验证
 
-        :param Schema schema: 验证器
+        :param Schema schema: schema实例
         :param dict extra_data: 额外的数据，会覆盖request的内容，并一起给予验证器验证
         :param args:
         :param kwargs:
@@ -31,10 +45,7 @@ class ApiView(MethodView):
             json_data = dict(json_data, **extra_data)
         # 给了验证器,则进行验证
         if isinstance(schema, Schema):
-            data, errors = schema.load(json_data)
-            # 有错误则抛出
-            if errors:
-                raise ValidateError(errors)
+            data = self.verify_data(schema, json_data)
         # 没有验证器,直接返回
         else:
             data = json_data
