@@ -53,24 +53,12 @@ def crossdomain(origin=None, methods=None, headers=None,
     return decorator
 
 
-def _api_response(resp=None, error_code=0, message=None):
-    """
-    将resp转换成json,没有resp则生成空字典
-
-    :param resp:
-    :param code:
-    :param message:
-    :return:
-    """
-    # 没有resp,生产空字典
-    if resp is None:
-        resp = {}
-    # 加上错误码
-    resp['e'] = error_code
-    # 加上信息
-    if message:
-        resp['msg'] = message
-    return jsonify(resp)
+def _api_error_response(e):
+    return jsonify({
+        'error': e.__class__.__name__,
+        'code': e.code,
+        'message': e.message
+    }), e.status_code
 
 
 def api_view(func):
@@ -90,19 +78,19 @@ def api_view(func):
             resp = func(*args, **kwargs)
         # 捕获到ApiError
         except ApiError as e:
-            resp = (_api_response(error_code=e.error_code, message=e.message), e.status_code)
+            resp = _api_error_response(e)
         # 没有错误
         else:
             # None => {'e':0}
             if resp is None:
-                resp = _api_response()
+                resp = 'sdfaasd', 204
             # response是元组，且第一个值为字典
             elif isinstance(resp, tuple):
                 if len(resp) == 2 and isinstance(resp[0], dict) and isinstance(resp[1], int):
-                    resp = (_api_response(resp=resp[0]), resp[1])
+                    resp = (jsonify(resp[0]), resp[1])
             # response是字典,包装成json
             elif isinstance(resp, dict):
-                resp = _api_response(resp=resp)
+                resp = jsonify(resp)
         return resp
 
     return wrapper
