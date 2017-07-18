@@ -83,13 +83,13 @@ def api_view(func):
         else:
             # None => {'e':0}
             if resp is None:
-                resp = 'sdfaasd', 204
+                resp = '', 204
             # response是元组，且第一个值为字典
-            elif isinstance(resp, tuple):
-                if len(resp) == 2 and isinstance(resp[0], dict) and isinstance(resp[1], int):
+            elif isinstance(resp, tuple) and len(resp) == 2:
+                if isinstance(resp[0], (dict, list)) and isinstance(resp[1], int):
                     resp = (jsonify(resp[0]), resp[1])
             # response是字典,包装成json
-            elif isinstance(resp, dict):
+            elif isinstance(resp, (dict, list)):
                 resp = jsonify(resp)
         return resp
 
