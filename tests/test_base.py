@@ -30,6 +30,32 @@ class BaseTestCase(AppTestCase):
         self.assertEqual(status_code, 200)
         self.assertEqual(data['hi'], 123)
 
+    def test_return_list(self):
+        """测试返回列表"""
+
+        class Ret(ApiView):
+            def get(self):
+                return [1, 2]
+
+        self.app.add_url_rule('/', methods=['GET'], view_func=Ret.as_view('ret'))
+        data, headers, status_code = self.get(url_for('ret'))
+        self.assertEqual(status_code, 200)
+        self.assertEqual(data[0], 1)
+        self.assertEqual(data[1], 2)
+
+    def test_return_dict_with_status(self):
+        """测试返回列表+状态码"""
+
+        class Ret(ApiView):
+            def get(self):
+                return [1, 2], 511
+
+        self.app.add_url_rule('/', methods=['GET'], view_func=Ret.as_view('ret'))
+        data, headers, status_code = self.get(url_for('ret'))
+        self.assertEqual(status_code, 511)
+        self.assertEqual(data[0], 1)
+        self.assertEqual(data[1], 2)
+
     def test_return_str(self):
         """测试返回字符串"""
 

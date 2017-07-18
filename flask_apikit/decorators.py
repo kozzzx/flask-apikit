@@ -84,11 +84,11 @@ def api_view(func):
             # None => {'e':0}
             if resp is None:
                 resp = '', 204
-            # response是元组，且第一个值为字典
+            # response是元组，且第一个值为字典或列表
             elif isinstance(resp, tuple) and len(resp) == 2:
                 if isinstance(resp[0], (dict, list)) and isinstance(resp[1], int):
                     resp = (jsonify(resp[0]), resp[1])
-            # response是字典,包装成json
+            # response是字典或列表,包装成json
             elif isinstance(resp, (dict, list)):
                 resp = jsonify(resp)
         return resp
