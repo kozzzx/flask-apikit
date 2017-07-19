@@ -78,19 +78,21 @@ def api_view(func):
             resp = func(*args, **kwargs)
         # 捕获到ApiError
         except ApiError as e:
-            resp = _api_error_response(e)
+            return _api_error_response(e)
         # 没有错误
         else:
-            # None => {'e':0}
+            # 如果发现返回数据为None，则返回204
             if resp is None:
                 resp = '', 204
-            # response是元组，且第一个值为字典或列表
-            elif isinstance(resp, tuple) and len(resp) == 2:
-                if isinstance(resp[0], (dict, list)) and isinstance(resp[1], int):
-                    resp = (jsonify(resp[0]), resp[1])
-            # response是字典或列表,包装成json
+            # 如果是元组，且第一个值为字典或列表，jsonify后返回
             elif isinstance(resp, (dict, list)):
                 resp = jsonify(resp)
-        return resp
+            elif isinstance(resp, tuple):
+                if isinstance(resp[0], (dict, list)):
+                    if len(resp) == 2:
+                        resp = (jsonify(resp[0]), resp[1])
+                    elif len(resp) == 3:
+                        resp = (jsonify(resp[0]), resp[1], resp[2])
+            return resp
 
     return wrapper
