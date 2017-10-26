@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 """
-Flask-ApiKit
+Flask-APIKit
 -------------
 
-Build Restful Api with Flask Quickly.
+Build Restful API with Flask Quickly.
 """
 from setuptools import setup
 
 setup(
-    name='Flask-ApiKit',
+    name='Flask-APIKit',
     version='0.1.0',
     # url='',
     license='BSD',
     author='kozzzx',
     author_email='kozzzx@qq.com',
-    description='Build Restful Api with Flask Quickly.',
+    description='Build Restful API with Flask Quickly.',
     long_description=__doc__,
     zip_safe=False,
     platforms='any',

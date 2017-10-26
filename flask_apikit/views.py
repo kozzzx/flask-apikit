@@ -6,7 +6,7 @@ from flask_apikit.decorators import api_view
 from flask_apikit.exceptions import ValidateError
 
 
-class ApiView(MethodView):
+class APIView(MethodView):
     decorators = (api_view,)
 
     def verify_data(self, data, schema, context=None):
@@ -38,7 +38,7 @@ class ApiView(MethodView):
         如果schema使用load_from,会优先使用字段名读取
         user_name = fields.Str(load_from='userName')
         优先级 'user_name'>'userName',也就是说如果get_json中使用的是'user_name',additional_data中是'userName',additional_data的数据将不生效
-        为安全性,验证使用additional_data传入的数据,请勿使用load_from
+        为安全性,如果要覆盖传入的数据,同时验证使用additional_data传入的数据,请勿使用load_from中的名字,直接使用字段名
         :param args:
         :param kwargs:
         :rtype: dict

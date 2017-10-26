@@ -1,4 +1,4 @@
-class ApiKit:
+class APIKit:
     def __init__(self, app=None):
         self.app = app
         if app is not None:

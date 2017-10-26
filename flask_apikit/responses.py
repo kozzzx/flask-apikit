@@ -7,7 +7,7 @@ def pagination(data, status_code=200, other_headers=None, **kwargs):
     return data, status_code, headers
 
 
-# class ApiResponse:
+# class APIResponse:
 #     header_prefix = ''
 #
 #     def __init__(self, data, status_code=200, other_headers=None, **kwargs):
@@ -22,5 +22,5 @@ def pagination(data, status_code=200, other_headers=None, **kwargs):
 #         return self.data, self.status_code, self.headers
 #
 #
-# class Pagination(ApiResponse):
+# class Pagination(APIResponse):
 #     header_prefix = 'X-Pagination-'

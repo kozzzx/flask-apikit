@@ -4,7 +4,7 @@ from functools import wraps
 
 from flask import jsonify, make_response, request, current_app
 
-from flask_apikit.exceptions import ApiError
+from flask_apikit.exceptions import APIError
 
 
 def crossdomain(origin=None, methods=None, headers=None,
@@ -64,7 +64,7 @@ def _api_error_response(e):
 def api_view(func):
     """
     api 视图装饰器
-    将ApiError,None,str,dict转换成_api_response
+    将APIError,None,str,dict转换成_api_response
 
     :param func:
     :return:
@@ -76,8 +76,8 @@ def api_view(func):
         # 尝试获取response
         try:
             resp = func(*args, **kwargs)
-        # 捕获到ApiError
-        except ApiError as e:
+        # 捕获到APIError
+        except APIError as e:
             return _api_error_response(e)
         # 没有错误
         else:

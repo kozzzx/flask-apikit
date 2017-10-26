@@ -1,13 +1,13 @@
-class ApiError(Exception):
+class APIError(Exception):
     """
-    所有Api抛出的错误需继承自此错误,才能被捕捉,并返回给前端
+    所有API抛出的错误需继承自此错误,才能被捕捉,并返回给前端
     """
     status_code = 400
     code = 1
     message = 'Undefined Error'
 
 
-class ValidateError(ApiError):
+class ValidateError(APIError):
     """
     @apiDefine ValidateError
     @apiError (可能的错误) {2} ValidateError 

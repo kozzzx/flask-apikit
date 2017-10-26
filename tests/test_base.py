@@ -1,8 +1,8 @@
 from flask import url_for
 
-from flask_apikit.exceptions import ApiError
+from flask_apikit.exceptions import APIError
 from flask_apikit.responses import pagination
-from flask_apikit.views import ApiView
+from flask_apikit.views import APIView
 from tests import AppTestCase
 
 
@@ -10,7 +10,7 @@ class BaseTestCase(AppTestCase):
     def test_return_none(self):
         """测试返回空"""
 
-        class Ret(ApiView):
+        class Ret(APIView):
             def get(self):
                 return
 
@@ -22,7 +22,7 @@ class BaseTestCase(AppTestCase):
     def test_return_dict(self):
         """测试返回字典"""
 
-        class Ret(ApiView):
+        class Ret(APIView):
             def get(self):
                 return {'hi': 123}
 
@@ -34,7 +34,7 @@ class BaseTestCase(AppTestCase):
     def test_return_list(self):
         """测试返回列表"""
 
-        class Ret(ApiView):
+        class Ret(APIView):
             def get(self):
                 return [1, 2]
 
@@ -47,7 +47,7 @@ class BaseTestCase(AppTestCase):
     def test_return_list_with_status(self):
         """测试返回列表+状态码"""
 
-        class Ret(ApiView):
+        class Ret(APIView):
             def get(self):
                 return [1, 2], 511
 
@@ -60,7 +60,7 @@ class BaseTestCase(AppTestCase):
     def test_return_list_with_headers(self):
         """测试返回列表+响应头"""
 
-        class Ret(ApiView):
+        class Ret(APIView):
             def get(self):
                 return [1, 2], {'XXX': 'x'}
 
@@ -74,7 +74,7 @@ class BaseTestCase(AppTestCase):
     def test_return_list_with_status_and_headers(self):
         """测试返回列表+状态码+响应头"""
 
-        class Ret(ApiView):
+        class Ret(APIView):
             def get(self):
                 return [1, 2], 511, {'XXX': 'x'}
 
@@ -88,7 +88,7 @@ class BaseTestCase(AppTestCase):
     def test_return_str(self):
         """测试返回字符串"""
 
-        class Ret(ApiView):
+        class Ret(APIView):
             def get(self):
                 return 'hi'
 
@@ -99,7 +99,7 @@ class BaseTestCase(AppTestCase):
     def test_return_dict_with_status(self):
         """测试返回字典+状态码"""
 
-        class Ret(ApiView):
+        class Ret(APIView):
             def get(self):
                 return {'hi': 123}, 511
 
@@ -111,7 +111,7 @@ class BaseTestCase(AppTestCase):
     def test_return_dict_with_headers(self):
         """测试返回字典+响应头"""
 
-        class Ret(ApiView):
+        class Ret(APIView):
             def get(self):
                 return {'hi': 123}, {'XXX': 'x'}
 
@@ -124,7 +124,7 @@ class BaseTestCase(AppTestCase):
     def test_return_dict_with_status_and_headers(self):
         """测试返回字典+状态码+响应头"""
 
-        class Ret(ApiView):
+        class Ret(APIView):
             def get(self):
                 return {'hi': 123}, 511, {'XXX': 'x'}
 
@@ -137,7 +137,7 @@ class BaseTestCase(AppTestCase):
     def test_return_str_with_status(self):
         """测试返回字符串+状态码"""
 
-        class Ret(ApiView):
+        class Ret(APIView):
             def get(self):
                 return 'hi', 511
 
@@ -149,24 +149,24 @@ class BaseTestCase(AppTestCase):
     def test_return_base_error(self):
         """测试返回基本错误"""
 
-        class Ret(ApiView):
+        class Ret(APIView):
             def get(self):
-                raise ApiError
+                raise APIError
 
         self.app.add_url_rule('/', methods=['GET'], view_func=Ret.as_view('ret'))
         data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(status_code, 400)
         self.assertEqual(data['code'], 1)
-        self.assertEqual(data['message'], ApiError.message)
+        self.assertEqual(data['message'], APIError.message)
 
     def test_return_error(self):
         """测试返回错误"""
 
-        class Err(ApiError):
+        class Err(APIError):
             code = 1000
             message = 'hi'
 
-        class Ret(ApiView):
+        class Ret(APIView):
             def get(self):
                 raise Err
 
@@ -179,12 +179,12 @@ class BaseTestCase(AppTestCase):
     def test_return_error_with_status(self):
         """测试返回错误+状态码"""
 
-        class Err(ApiError):
+        class Err(APIError):
             status_code = 511
             code = 1000
             message = 'hi'
 
-        class Ret(ApiView):
+        class Ret(APIView):
             def get(self):
                 raise Err
 
@@ -197,7 +197,7 @@ class BaseTestCase(AppTestCase):
     def test_pagination(self):
         """测试返回分页"""
 
-        class Ret(ApiView):
+        class Ret(APIView):
             def get(self):
                 return pagination([1, 2], limit=10, total=100)
 
@@ -212,7 +212,7 @@ class BaseTestCase(AppTestCase):
     def test_pagination_dict(self):
         """测试返回分页为字典格式"""
 
-        class Ret(ApiView):
+        class Ret(APIView):
             def get(self):
                 return pagination({'hi': 123}, limit=10, total=100)
 
@@ -226,7 +226,7 @@ class BaseTestCase(AppTestCase):
     def test_pagination_with_status(self):
         """测试返回分页+状态码"""
 
-        class Ret(ApiView):
+        class Ret(APIView):
             def get(self):
                 return pagination([1, 2], 511, limit=10, total=100)
 
@@ -241,7 +241,7 @@ class BaseTestCase(AppTestCase):
     def test_pagination_other_headers(self):
         """测试返回分页包含其他headers"""
 
-        class Ret(ApiView):
+        class Ret(APIView):
             def get(self):
                 return pagination({'hi': 123}, other_headers={'AAA': 'a', 'bbb': 'B'}, limit=10, total=100)
 
