@@ -1,6 +1,7 @@
 from flask import request
 from flask.views import MethodView
 from marshmallow import Schema
+from marshmallow.exceptions import ValidationError
 
 from flask_apikit.decorators import api_view
 from flask_apikit.exceptions import ValidateError
@@ -24,10 +25,10 @@ class APIView(MethodView):
         # 传递给schema使用的额外数据
         if context:
             schema.context = context
-        data, errors = schema.load(data)
-        # 有错误则抛出
-        if errors:
-            raise ValidateError(errors)
+        try:
+            data = schema.load(data)
+        except ValidationError as e:
+            raise ValidateError(e.messages)
         return data
 
     def get_json(self,

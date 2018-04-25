@@ -84,15 +84,13 @@ def api_view(func):
             # 如果发现返回数据为None，则返回204
             if resp is None:
                 resp = '', 204
-            # 如果是元组，且第一个值为字典或列表，jsonify后返回
+            # 如果字典或列表，jsonify后返回
             elif isinstance(resp, (dict, list)):
                 resp = jsonify(resp)
+            # 如果是元组，则只jsonify第一个值（P.S. 后两个是状态码，HTTP头）
             elif isinstance(resp, tuple):
                 if isinstance(resp[0], (dict, list)):
-                    if len(resp) == 2:
-                        resp = (jsonify(resp[0]), resp[1])
-                    elif len(resp) == 3:
-                        resp = (jsonify(resp[0]), resp[1], resp[2])
+                    resp = (jsonify(resp[0]), *resp[1:])
             return resp
 
     return wrapper
