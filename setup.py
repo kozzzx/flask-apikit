@@ -9,7 +9,7 @@ from setuptools import setup
 
 setup(
     name='Flask-APIKit',
-    version='0.0.1',
+    version='0.0.2',
     url='https://github.com/kozzzx/flask-apikit',
     license='BSD',
     author='kozzzx',
