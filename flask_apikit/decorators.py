@@ -5,6 +5,7 @@ from functools import wraps
 from flask import jsonify, make_response, request, current_app
 
 from flask_apikit.exceptions import APIError
+from flask_apikit.responses import APIResponse
 
 
 def crossdomain(origin=None, methods=None, headers=None,
@@ -81,6 +82,9 @@ def api_view(func):
             return _api_error_response(e)
         # 没有错误
         else:
+            # 将APIResponse转化成元组，以供下面处理
+            if isinstance(resp, APIResponse):
+                resp = resp.to_tuple()
             # 如果发现返回数据为None，则返回204
             if resp is None:
                 resp = '', 204
