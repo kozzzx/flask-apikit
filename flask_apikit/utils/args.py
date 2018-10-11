@@ -1,15 +1,11 @@
-def split_comma_str(value, parse_int=True):
-    def to_int(v):
-        try:
-            v = int(v)
-        except ValueError:
-            pass
-        finally:
-            return v
-
-    if not value:
-        return None
-    value_list = value.split(',')
-    if parse_int:
-        value_list = list(map(to_int, value_list))
-    return value_list
+def boolean(data):
+    # 处理url中传来的bool类型参数
+    if (
+            data == '' or
+            data.lower() == 'false' or
+            data == '0' or
+            data is None
+    ):
+        return False
+    else:
+        return True
