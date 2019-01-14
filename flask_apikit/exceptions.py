@@ -6,16 +6,29 @@ class APIError(Exception):
     code = 1
     message = 'Undefined Error'
 
+    def __init__(self, message=None, replace=False):
+        """
+        :param message: 附加message
+        :param replace: 是否替换原message，为False则为'原message: 附加message'
+        """
+        # 如果定义了附加message，则加在原message后面
+        if message:
+            if replace:
+                self.message = message
+            else:
+                self.message = f'{self.message}: {message}'
+
 
 class ValidateError(APIError):
     """
     @apiDefine ValidateError
-    @apiError (可能的错误) {2} ValidateError 
-    参数错误,具体错误信息将包含在msg中
+    @apiError 2 字段验证错误
+    参数错误,具体错误信息将包含在message中
     @apiErrorExample {json} ValidateError示例
     {
-        "e": 2,
-        "msg": {
+        "error": "ValidateError",
+        "code": 2,
+        "message": {
             "email": [
                 "此郵箱已存在,您可以直接登錄或嘗試其他郵箱"
             ],
@@ -27,5 +40,10 @@ class ValidateError(APIError):
     """
     code = 2
 
-    def __init__(self, message):
-        self.message = message
+
+class QueryParseError(APIError):
+    """
+    @apiDefine QueryParseError
+    @apiError 3 Query解析错误
+    """
+    code = 3
