@@ -35,6 +35,8 @@ class QueryTestCase(AppTestCase):
 
         # 提交各种数据
         request_data = {
+            'ne_int': -1,
+            'zero': 0,
             'int': 1,
             'float': 1.1,
             'str': '1',
@@ -65,8 +67,9 @@ class QueryTestCase(AppTestCase):
             """原样返回get_json数据"""
 
             def get(self):
-                print(request.query_string)
                 return self.get_query({
+                    'ne_int': QueryParser.int,
+                    'zero': QueryParser.int,
                     'int': QueryParser.int,
                     'float': QueryParser.float,
                     'true': QueryParser.bool,
@@ -96,6 +99,8 @@ class QueryTestCase(AppTestCase):
 
         # 提交没有解析器的各种数据，返回字符串，列表返回第一个元素的字符串
         request_data = {
+            'ne_int_no_parse': -1,
+            'zero_no_parse': 0,
             'int_no_parse': 1,
             'float_no_parse': 1.1,
             'str_no_parse': '1',
@@ -112,6 +117,8 @@ class QueryTestCase(AppTestCase):
         )
         self.assertEqual(status_code, 200)
         self.assertEqual(data, {
+            'ne_int_no_parse': '-1',
+            'zero_no_parse': '0',
             'int_no_parse': '1',
             'float_no_parse': '1.1',
             'str_no_parse': '1',
@@ -125,6 +132,8 @@ class QueryTestCase(AppTestCase):
 
         # 提交有解析器的各种数据，原样返回
         request_data = {
+            'ne_int': -1,
+            'zero': 0,
             'int': 1,
             'float': 1.1,
             'str': '1',
