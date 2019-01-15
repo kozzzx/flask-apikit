@@ -1,6 +1,4 @@
-from flask import url_for, request
-
-from flask_apikit.exceptions import QueryParseError
+from flask import url_for
 from flask_apikit.utils.query import QueryParser
 from flask_apikit.views import APIView
 from tests import AppTestCase
