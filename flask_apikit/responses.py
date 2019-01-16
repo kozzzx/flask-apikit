@@ -10,14 +10,14 @@ class APIResponse:
 
 class Pagination(APIResponse):
 
-    def __init__(self, data: list, count: int, page: int, limit: int, status_code: int=200, headers: dict=None):
+    def __init__(self, data: list, count: int, page: int, limit: int, status_code: int = 200, headers: dict = None):
         """
-        :param data: 数据，需要是个列表
-        :param count: 数据总数
+        :param data: 数据
+        :param count: 条目总数
         :param page: 当前页数
-        :param limit: 数据单页个数
+        :param limit: 每页条目数
         :param status_code: 状态码
-        :param other_headers: 其他请求头
+        :param headers: 其他请求头
         :return:
         """
         if headers is None:
