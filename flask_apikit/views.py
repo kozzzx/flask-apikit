@@ -1,11 +1,10 @@
-from flask import request
+from flask import request, current_app
 from flask.views import MethodView
 from marshmallow import Schema
 from marshmallow.exceptions import ValidationError
 
 from flask_apikit.decorators import api_view
 from flask_apikit.exceptions import ValidateError
-from flask_apikit.utils.query import QueryParser
 
 
 class APIView(MethodView):
@@ -77,14 +76,15 @@ class APIView(MethodView):
                   context: dict = None,
                   additional_data: dict = None) -> dict:
         """
-        从request获取query数据，没有则返回空字典
-        query值默认将作为字符串返回，可以定义
+        从request.args中获取query数据，没有则返回空字典
+        默认将作为字符串返回，可以使用parsers参数定义每个键值对的解析规则
         可以使用一个验证器进行数据验证
 
-        :param parsers: 用于转换数据
+        :param parsers: 用于定义转换数据的解析器
             {
-                'age': QueryParser.int,
-                'names': [QueryParser.int]
+                'names': [],  # 解析成字符串列表
+                'age': QueryParser.int,  # 解析成整型
+                'ages': [QueryParser.int]  # 解析成整型列表
             }
         :param Schema schema: schema实例，使用marshmallow进行数据验证
         :param dict context: 传递给schema使用的额外数据，保存在schema的context属性中
@@ -126,3 +126,40 @@ class APIView(MethodView):
         else:
             data = query_data
         return data
+
+    def get_pagination(self,
+                       default_limit: int = None,
+                       max_limit: int = None,
+                       page_key: str = None,
+                       limit_key: str = None):
+        """
+        从request.args中获取分页数据，并返回(skip, limit, page)
+
+        :param default_limit: 如果request.args中没有“每页条目数”参数，则使用此值
+        :param max_limit: 限制最大的页数，如果为0则为不限制
+        :param page_key: request.args中“页数”的key
+        :param limit_key: request.args中“每页条目数”的key
+        :return (skip, limit, page): (跳过的个数，每页条目数，当前页数)
+        """
+        # 获取配置
+        if default_limit is None:
+            default_limit = current_app.config['APIKIT_PAGINATION_DEFAULT_LIMIT']
+        if max_limit is None:
+            max_limit = current_app.config['APIKIT_PAGINATION_MAX_LIMIT']
+        if page_key is None:
+            page_key = current_app.config['APIKIT_PAGINATION_PAGE_KEY']
+        if limit_key is None:
+            limit_key = current_app.config['APIKIT_PAGINATION_LIMIT_KEY']
+        print(default_limit, max_limit, page_key, limit_key)
+        # 获取页数，默认1
+        page = request.args.get(page_key, 1, int)
+        if page < 1:
+            page = 1
+        # 限制数量，默认default_limit
+        limit = request.args.get(limit_key, default_limit, int)
+        if limit < 1:
+            limit = default_limit
+        if max_limit and limit > max_limit:  # 限制最大数量
+            limit = max_limit
+        skip = (page - 1) * limit  # 计算出要跳过的数量
+        return skip, limit, page
