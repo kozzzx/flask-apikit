@@ -14,6 +14,10 @@ class APIKit:
         app.config.setdefault('APIKIT_PAGINATION_DEFAULT_LIMIT', 10)
         # “每页条目数”的最大值，设为0则为不限制
         app.config.setdefault('APIKIT_PAGINATION_MAX_LIMIT', 0)
+        # 分页返回的响应头的key
+        app.config.setdefault('APIKIT_PAGINATION_HEADER_PAGE_KEY', 'X-Pagination-Page')
+        app.config.setdefault('APIKIT_PAGINATION_HEADER_LIMIT_KEY', 'X-Pagination-Limit')
+        app.config.setdefault('APIKIT_PAGINATION_HEADER_COUNT_KEY', 'X-Pagination-Count')
         app.teardown_appcontext(self.teardown)
 
     def teardown(self, exception):
