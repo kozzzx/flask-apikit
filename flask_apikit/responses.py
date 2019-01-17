@@ -28,10 +28,8 @@ class Pagination(APIResponse):
         # 从app上下文获取分页数据
         ctx = _app_ctx_stack.top
         if ctx is not None and hasattr(ctx, 'apikit_pagination'):
-            print(page)
             if page is None:
                 page = ctx.apikit_pagination['page']
-                print(page)
             if limit is None:
                 limit = ctx.apikit_pagination['limit']
         # 如果page/limit仍未None则报错
