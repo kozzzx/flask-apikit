@@ -1,4 +1,4 @@
-from flask import current_app
+from flask import current_app, _app_ctx_stack
 
 
 class APIResponse:
@@ -12,7 +12,8 @@ class APIResponse:
 
 
 class Pagination(APIResponse):
-    def __init__(self, data: list, count: int, page: int, limit: int, status_code: int = 200, headers: dict = None):
+    def __init__(self, data: list, count: int, page: int = None, limit: int = None, status_code: int = 200,
+                 headers: dict = None):
         """
         :param data: 数据
         :param count: 总条目数
@@ -24,6 +25,20 @@ class Pagination(APIResponse):
         """
         if headers is None:
             headers = {}
+        # 从app上下文获取分页数据
+        ctx = _app_ctx_stack.top
+        if ctx is not None and hasattr(ctx, 'apikit_pagination'):
+            print(page)
+            if page is None:
+                page = ctx.apikit_pagination['page']
+                print(page)
+            if limit is None:
+                limit = ctx.apikit_pagination['limit']
+        # 如果page/limit仍未None则报错
+        if None in (page, limit):
+            raise RuntimeError(
+                'Need use APIView.get_pagination() before Pagination() or specify parameters "page" & "limit"]'
+            )
         # 拼接上分页的参数
         headers[current_app.config['APIKIT_PAGINATION_HEADER_PAGE_KEY']] = page
         headers[current_app.config['APIKIT_PAGINATION_HEADER_LIMIT_KEY']] = limit

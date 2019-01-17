@@ -1,4 +1,4 @@
-from flask import request, current_app
+from flask import request, current_app, _app_ctx_stack
 from flask.views import MethodView
 from marshmallow import Schema
 from marshmallow.exceptions import ValidationError
@@ -127,11 +127,14 @@ class APIView(MethodView):
             data = query_data
         return data
 
-    def get_pagination(self,
-                       default_limit: int = None,
-                       max_limit: int = None,
-                       page_key: str = None,
-                       limit_key: str = None):
+    def get_pagination(
+            self,
+            default_limit: int = None,
+            max_limit: int = None,
+            page_key: str = None,
+            limit_key: str = None,
+            save_in_ctx: bool = True
+    ):
         """
         从request.args中获取分页数据，并返回(skip, limit, page)
 
@@ -139,6 +142,7 @@ class APIView(MethodView):
         :param max_limit: 限制最大的页数，如果为0则为不限制
         :param page_key: request.args中“页数”的key
         :param limit_key: request.args中“每页条目数”的key
+        :param save_in_ctx: 是否将获取到的数据保存到app上下文，以供Pagination对象使用
         :return (skip, limit, page): (跳过的个数，每页条目数，当前页数)
         """
         # 获取配置
@@ -150,7 +154,6 @@ class APIView(MethodView):
             page_key = current_app.config['APIKIT_PAGINATION_PAGE_KEY']
         if limit_key is None:
             limit_key = current_app.config['APIKIT_PAGINATION_LIMIT_KEY']
-        print(default_limit, max_limit, page_key, limit_key)
         # 获取页数，默认1
         page = request.args.get(page_key, 1, int)
         if page < 1:
@@ -162,4 +165,13 @@ class APIView(MethodView):
         if max_limit and limit > max_limit:  # 限制最大数量
             limit = max_limit
         skip = (page - 1) * limit  # 计算出要跳过的数量
+        # 将分页数据存储到app上下文，以供Pagination使用
+        if save_in_ctx:
+            ctx = _app_ctx_stack.top
+            if ctx is not None:
+                ctx.apikit_pagination = {
+                    'skip': skip,
+                    'limit': limit,
+                    'page': page
+                }
         return skip, limit, page

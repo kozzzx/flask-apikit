@@ -1,3 +1,6 @@
+from flask import _app_ctx_stack
+
+
 class APIKit:
     def __init__(self, app=None):
         self.app = app
@@ -19,6 +22,13 @@ class APIKit:
         app.config.setdefault('APIKIT_PAGINATION_HEADER_LIMIT_KEY', 'X-Pagination-Limit')
         app.config.setdefault('APIKIT_PAGINATION_HEADER_COUNT_KEY', 'X-Pagination-Count')
         app.teardown_appcontext(self.teardown)
+
+    @property
+    def pagination(self):
+        ctx = _app_ctx_stack.top
+        if ctx is not None:
+            if not hasattr(ctx, 'apikit_pagination'):
+                return ctx.apikit_pagination
 
     def teardown(self, exception):
         """暂时没有什么资源需要释放"""
