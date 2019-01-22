@@ -161,6 +161,33 @@ class QueryTestCase(AppTestCase):
             'int_list': [1]
         })
 
+        # 测试列表的顺序
+        request_data = {
+            'int_list': [1, 2],
+            'str_list': ['1', '2'],
+            'float_list': [1.1, 2.2],
+            'bool_list': [True, False]
+        }
+        data, headers, status_code = self.get(
+            url_for('ret'),
+            query_string=request_data
+        )
+        self.assertEqual(status_code, 200)
+        self.assertEqual(data, request_data)
+        # 倒序也没问题
+        request_data = {
+            'int_list': [2, 1],
+            'str_list': ['2', '1'],
+            'float_list': [2.2, 1.2],
+            'bool_list': [False, True]
+        }
+        data, headers, status_code = self.get(
+            url_for('ret'),
+            query_string=request_data
+        )
+        self.assertEqual(status_code, 200)
+        self.assertEqual(data, request_data)
+
         # 提交错误的数据
         request_data = {
             'int': 'abc'

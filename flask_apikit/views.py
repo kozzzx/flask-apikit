@@ -98,22 +98,21 @@ class APIView(MethodView):
         :rtype: dict
         :return:
         """
-        # 从request获取json
+        # 从request获取args
         query_data = dict(request.args)
-        # 如果有parsers，则通过其转换数据
         for key in query_data:
-            # 如果提供了解析器
+            # 如果提供了解析器，则通过其转换数据
             if parsers and key in parsers:
                 parser = parsers[key]
                 # 如果解析器是个列表，表示将数据当做列表处理并返回
                 if isinstance(parser, list):
-                    # 如果列表中解析器，使用parser[0]进行处理，否则跳过不处理
+                    # 如果解析器是个列表，使用parser[0]进行处理
                     if len(parser) > 0:
                         query_data[key] = [parser[0](data) for data in query_data[key]]
-                # 只使用解析器处理第一个元素
+                # 直接使用parser进行处理
                 else:
                     query_data[key] = parser(query_data[key][0])
-            # 没有提供处理器，则将值设为列表中第一个字符串
+            # 没有提供处理器，将值设为列表中第一个字符串
             else:
                 query_data[key] = query_data[key][0]
         # 将附加的数据附加到query_data
