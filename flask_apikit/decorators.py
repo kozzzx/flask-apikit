@@ -50,6 +50,7 @@ def crossdomain(origin=None, methods=None, headers=None, expose_headers=None,
                 h['Access-Control-Allow-Headers'] = headers
             if expose_headers is not None:
                 h['Access-Control-Expose-Headers'] = expose_headers
+                # todo: 在这里加上分页头参数
             return resp
 
         f.provide_automatic_options = False

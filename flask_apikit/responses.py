@@ -12,7 +12,7 @@ class APIResponse:
 
 
 class Pagination(APIResponse):
-    def __init__(self, data: list, count: int, page: int = None, limit: int = None, status_code: int = 200,
+    def __init__(self, data: list, count: int, limit: int = None, page: int = None, status_code: int = 200,
                  headers: dict = None):
         """
         :param data: 数据
