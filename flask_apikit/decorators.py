@@ -1,62 +1,70 @@
-from datetime import timedelta
-from functools import update_wrapper
 from functools import wraps
 
-from flask import jsonify, make_response, request, current_app
+from flask import jsonify, make_response, request, current_app, Request
 
 from flask_apikit.exceptions import APIError
 from flask_apikit.responses import APIResponse
 
 
-def crossdomain(origin=None, methods=None, headers=None, expose_headers=None,
-                max_age=21600, attach_to_all=True,
-                automatic_options=True):
-    """
-    See: http://flask.pocoo.org/snippets/56/
-    """
-    if methods is not None:
-        methods = ', '.join(sorted(x.upper() for x in methods))
-    if headers is not None and not isinstance(headers, str):
-        headers = ', '.join(x.upper() for x in headers)
-    if expose_headers is not None and not isinstance(expose_headers, str):
-        expose_headers = ', '.join(x.upper() for x in expose_headers)
-    if not isinstance(origin, str):
-        origin = ', '.join(origin)
-    if isinstance(max_age, timedelta):
-        max_age = max_age.total_seconds()
+def cross_domain(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        def get_allow_methods():
+            """直接使用add_url_rule时定义的methods"""
+            options_resp = current_app.make_default_options_response()
+            return options_resp.headers['allow']
 
-    def get_methods():
-        if methods is not None:
-            return methods
-
-        options_resp = current_app.make_default_options_response()
-        return options_resp.headers['allow']
-
-    def decorator(f):
-        def wrapper(*args, **kwargs):
-            if automatic_options and request.method == 'OPTIONS':
-                resp = current_app.make_default_options_response()
-            else:
-                resp = make_response(f(*args, **kwargs))
-            if not attach_to_all and request.method != 'OPTIONS':
-                return resp
-
+        # 自动处理OPTIONS的响应
+        if request.method == 'OPTIONS':
+            resp = current_app.make_default_options_response()
             h = resp.headers
+            # PreFlight Request所使用的响应头
+            # Max-Age
+            if current_app.config['APIKIT_ACCESS_CONTROL_MAX_AGE']:
+                h['Access-Control-Max-Age'] = current_app.config['APIKIT_ACCESS_CONTROL_MAX_AGE']
+            # Allow-Methods
+            h['Access-Control-Allow-Methods'] = get_allow_methods()
+            # Allow-Headers
+            if current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_HEADERS']:
+                h['Access-Control-Allow-Headers'] = ', '.join(
+                    x.upper() for x in current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_HEADERS']
+                )
+        else:
+            resp = make_response(func(*args, **kwargs))
+            h = resp.headers
+        # 其他公用的响应头
+        # Allow-Origin
+        # 如果是字符串则直接返回
+        if isinstance(current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN'], str):
+            h['Access-Control-Allow-Origin'] = current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN']
+        # 如果时列表，根据请求中的Origin动态设置Allow-Origin
+        elif isinstance(current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN'], list):
+            origin = request.headers.get('Origin')
+            # 如果有ORIGIN并且存在于配置白名单中则加上
+            if origin and origin.lower() in [
+                o.lower() for o in current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN']
+            ]:
+                h['Access-Control-Allow-Origin'] = origin.lower()
+        # Expose-Headers
+        if current_app.config['APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS']:
+            h['Access-Control-Expose-Headers'] = ', '.join(
+                x.upper() for x in current_app.config['APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS']
+            )
+        # 分页的Expose-Headers
+        if current_app.config['APIKIT_PAGINATION_AUTO_EXPOSE_HEADERS']:
+            if 'Access-Control-Expose-Headers' not in h:
+                h['Access-Control-Expose-Headers'] = ''
+            else:
+                h['Access-Control-Expose-Headers'] += ', '
+            # 接上分页参数响应头
+            h['Access-Control-Expose-Headers'] += ', '.join(x.upper() for x in [
+                current_app.config['APIKIT_PAGINATION_HEADER_PAGE_KEY'],
+                current_app.config['APIKIT_PAGINATION_HEADER_LIMIT_KEY'],
+                current_app.config['APIKIT_PAGINATION_HEADER_COUNT_KEY']
+            ])
+        return resp
 
-            h['Access-Control-Allow-Origin'] = origin
-            h['Access-Control-Allow-Methods'] = get_methods()
-            h['Access-Control-Max-Age'] = str(max_age)
-            if headers is not None:
-                h['Access-Control-Allow-Headers'] = headers
-            if expose_headers is not None:
-                h['Access-Control-Expose-Headers'] = expose_headers
-                # todo: 在这里加上分页头参数
-            return resp
-
-        f.provide_automatic_options = False
-        return update_wrapper(wrapper, f)
-
-    return decorator
+    return wrapper
 
 
 def _api_error_response(e):
@@ -76,8 +84,7 @@ def api_view(func):
     :return:
     """
 
-    @crossdomain(origin='*', headers=['Authorization', 'Content-Type'],
-                 expose_headers=['X-Pagination-Count', 'X-Pagination-Page', 'X-Pagination-Limit'])
+    @cross_domain
     @wraps(func)
     def wrapper(*args, **kwargs):
         # 尝试获取response

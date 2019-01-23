@@ -4,7 +4,7 @@ from flask_apikit.views import APIView
 from tests import AppTestCase
 
 
-class QueryTestCase(AppTestCase):
+class ViewUtilsTestCase(AppTestCase):
     def test_get_json(self):
         """测试get_json"""
 

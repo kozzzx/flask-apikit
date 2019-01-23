@@ -9,6 +9,9 @@ from flask_apikit.exceptions import ValidateError
 
 class APIView(MethodView):
     decorators = (api_view,)
+    # 关闭View中Flask对OPTIONS请求的默认处理
+    # （以防add_url_rule时methods忘记加'OPTIONS'，OPTIONS请求被Flask的dispatch_request处理）
+    provide_automatic_options = False
 
     def verify_data(self,
                     data: dict,

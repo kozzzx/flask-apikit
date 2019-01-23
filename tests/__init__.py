@@ -2,6 +2,7 @@ import json
 from unittest import TestCase
 
 from flask import Flask
+from flask_apikit import APIKit
 
 
 class AppTestCase(TestCase):
@@ -11,6 +12,9 @@ class AppTestCase(TestCase):
         self.app_context = self.app.app_context()
         self.app_context.push()
         self.client = self.app.test_client(use_cookies=True)
+        # 初始化Flask-APIKit插件
+        self.apikit = APIKit()
+        self.apikit.init_app(self.app)
 
     def open(self, *args, **kwargs):
         # 查看是否指定client
@@ -25,9 +29,6 @@ class AppTestCase(TestCase):
         if data:
             kwargs['data'] = json.dumps(data)
             kwargs['headers']['Content-Type'] = 'application/json'
-        token = kwargs.pop('token', None)
-        if token:
-            kwargs['headers']['Authorization'] = 'Bearer {}'.format(token)
         resp = client.open(*args, **kwargs)
         headers = resp.headers
         status_code = resp._status_code

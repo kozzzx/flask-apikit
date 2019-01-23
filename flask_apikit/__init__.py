@@ -17,6 +17,12 @@ class APIKit:
         app.config.setdefault('APIKIT_PAGINATION_DEFAULT_LIMIT', 10)
         # “每页条目数”的最大值，设为0则为不限制
         app.config.setdefault('APIKIT_PAGINATION_MAX_LIMIT', 0)
+        # Access-Control配置
+        app.config.setdefault('APIKIT_ACCESS_CONTROL_MAX_AGE', 21600)
+        app.config.setdefault('APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN', '*')
+        app.config.setdefault('APIKIT_ACCESS_CONTROL_ALLOW_HEADERS', ['Authorization', 'Content-Type'])
+        app.config.setdefault('APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS', [])
+        app.config.setdefault('APIKIT_PAGINATION_AUTO_EXPOSE_HEADERS', True)
         # 分页返回的响应头的key
         app.config.setdefault('APIKIT_PAGINATION_HEADER_PAGE_KEY', 'X-Pagination-Page')
         app.config.setdefault('APIKIT_PAGINATION_HEADER_LIMIT_KEY', 'X-Pagination-Limit')
