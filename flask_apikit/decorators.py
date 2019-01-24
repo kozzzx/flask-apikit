@@ -9,54 +9,72 @@ from flask_apikit.responses import APIResponse
 def cross_domain(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
+
         def get_allow_methods():
-            """直接使用add_url_rule时定义的methods"""
+            """返回add_url_rule时定义的methods"""
             options_resp = current_app.make_default_options_response()
             return options_resp.headers['allow']
 
-        # 自动处理OPTIONS的响应
+        # 生成Response
         if request.method == 'OPTIONS':
             resp = current_app.make_default_options_response()
-            h = resp.headers
-            # PreFlight Request所使用的响应头
-            # Max-Age
+        else:
+            resp = make_response(func(*args, **kwargs))
+        # 为Response添加响应头
+        h = resp.headers
+        # === PreFlight专用的响应头 ===
+        if request.method == 'OPTIONS':
+            # ==> Access-Control-Max-Age
             if current_app.config['APIKIT_ACCESS_CONTROL_MAX_AGE']:
                 h['Access-Control-Max-Age'] = current_app.config['APIKIT_ACCESS_CONTROL_MAX_AGE']
-            # Allow-Methods
+            # ==> Access-Control-Allow-Methods
             h['Access-Control-Allow-Methods'] = get_allow_methods()
-            # Allow-Headers
+            # ==> Access-Control-Allow-Headers
             if current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_HEADERS']:
                 h['Access-Control-Allow-Headers'] = ', '.join(
                     x.upper() for x in current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_HEADERS']
                 )
-        else:
-            resp = make_response(func(*args, **kwargs))
-            h = resp.headers
-        # 其他公用的响应头
-        # Allow-Origin
-        # 如果是字符串则直接返回
-        if isinstance(current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN'], str):
-            h['Access-Control-Allow-Origin'] = current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN']
-        # 如果时列表，根据请求中的Origin动态设置Allow-Origin
-        elif isinstance(current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN'], list):
-            origin = request.headers.get('Origin')
-            # 如果有ORIGIN并且存在于配置白名单中则加上
-            if origin and origin.lower() in [
-                o.lower() for o in current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN']
-            ]:
-                h['Access-Control-Allow-Origin'] = origin.lower()
-        # Expose-Headers
+        # === 其他公用的响应头 ===
+        # ==> Access-Control-Allow-Credentials
+        if current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_CREDENTIALS'] is True:
+            h['Access-Control-Allow-Credentials'] = 'true'
+        # ==> Access-Control-Allow-Origin
+        origin = request.headers.get('Origin')  # 请求头的Origin
+        if origin:
+            # 将Origin处理为小写
+            origin = origin.lower()
+            # 是"*"通配符，允许所有Origin访问
+            if current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN'] == '*':
+                # 如果允许携带证书则必须返回与Origin相同的值
+                # See also：https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#Requests_with_credentials
+                if current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_CREDENTIALS'] is True:
+                    h['Access-Control-Allow-Origin'] = origin
+                # 其他情况直接返回"*"通配符
+                else:
+                    h['Access-Control-Allow-Origin'] = '*'
+            # 指定了其他参数
+            else:
+                # ALLOW_ORIGIN是字符串，且与请求头的Origin一致
+                if isinstance(current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN'], str):
+                    if origin == current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN'].lower():
+                        h['Access-Control-Allow-Origin'] = origin
+                # ALLOW_ORIGIN是列表，且包含请求头的Origin
+                elif isinstance(current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN'], list):
+                    if origin in [
+                        o.lower() for o in current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN']
+                    ]:
+                        h['Access-Control-Allow-Origin'] = origin
+        # ==> Access-Control-Expose-Headers
         if current_app.config['APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS']:
             h['Access-Control-Expose-Headers'] = ', '.join(
                 x.upper() for x in current_app.config['APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS']
             )
-        # 分页的Expose-Headers
+        # ==> 自动加入分页所用的 Access-Control-Expose-Headers
         if current_app.config['APIKIT_PAGINATION_AUTO_EXPOSE_HEADERS']:
             if 'Access-Control-Expose-Headers' not in h:
                 h['Access-Control-Expose-Headers'] = ''
             else:
                 h['Access-Control-Expose-Headers'] += ', '
-            # 接上分页参数响应头
             h['Access-Control-Expose-Headers'] += ', '.join(x.upper() for x in [
                 current_app.config['APIKIT_PAGINATION_HEADER_PAGE_KEY'],
                 current_app.config['APIKIT_PAGINATION_HEADER_LIMIT_KEY'],
