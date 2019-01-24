@@ -6,14 +6,16 @@ from flask_apikit.exceptions import APIError
 from flask_apikit.responses import APIResponse
 
 
-def cross_domain(func):
+def api_cors(func):
+    """处理Response的CORS响应头"""
+
     @wraps(func)
     def wrapper(*args, **kwargs):
 
         def get_allow_methods():
             """返回add_url_rule时定义的methods"""
             options_resp = current_app.make_default_options_response()
-            return options_resp.headers['allow']
+            return options_resp.headers.get('allow')
 
         # 生成Response
         if request.method == 'OPTIONS':
@@ -71,10 +73,11 @@ def cross_domain(func):
             )
         # ==> 自动加入分页所用的 Access-Control-Expose-Headers
         if current_app.config['APIKIT_PAGINATION_AUTO_EXPOSE_HEADERS']:
-            if 'Access-Control-Expose-Headers' not in h:
-                h['Access-Control-Expose-Headers'] = ''
-            else:
+            # 之前有添加过Expose-Headers，则再加一个逗号
+            if current_app.config['APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS']:
                 h['Access-Control-Expose-Headers'] += ', '
+            else:
+                h['Access-Control-Expose-Headers'] = ''
             h['Access-Control-Expose-Headers'] += ', '.join(x.upper() for x in [
                 current_app.config['APIKIT_PAGINATION_HEADER_PAGE_KEY'],
                 current_app.config['APIKIT_PAGINATION_HEADER_LIMIT_KEY'],
@@ -85,24 +88,14 @@ def cross_domain(func):
     return wrapper
 
 
-def _api_error_response(e):
-    return jsonify({
-        'error': e.__class__.__name__,
-        'code': e.code,
-        'message': e.message
-    }), e.status_code
-
-
-def api_view(func):
+def api_response(func):
     """
-    api 视图装饰器
-    将APIError,None,str,dict转换成_api_response
+    将视图返回的值处理为flask.app.make_response所用的参数rv，并将数据部分json化
 
     :param func:
     :return:
     """
 
-    @cross_domain
     @wraps(func)
     def wrapper(*args, **kwargs):
         # 尝试获取response
@@ -110,22 +103,21 @@ def api_view(func):
             resp = func(*args, **kwargs)
         # 捕获到APIError
         except APIError as e:
-            return _api_error_response(e)
+            return e.to_tuple()
         # 没有错误
         else:
-            # 将APIResponse转化成元组，以供下面处理
-            if isinstance(resp, APIResponse):
-                resp = resp.to_tuple()
             # 如果发现返回数据为None，则返回204
             if resp is None:
                 resp = '', 204
-            # 如果字典或列表，jsonify后返回
+            # 如果是字典或列表，转换为json后返回
             elif isinstance(resp, (dict, list)):
                 resp = jsonify(resp)
-            # 如果是元组，则只jsonify第一个值（P.S. 后两个是状态码，HTTP头）
-            elif isinstance(resp, tuple):
-                if isinstance(resp[0], (dict, list)):
-                    resp = (jsonify(resp[0]), *resp[1:])
+            # 如果是有两个元素以上的元组，且第一个值为字典或列表，则将第一个值转换为json（P.S. 后两个是状态码，HTTP头）
+            elif isinstance(resp, tuple) and len(resp) > 1 and isinstance(resp[0], (dict, list)):
+                resp = (jsonify(resp[0]), *resp[1:])
+            # APIResponse直接返回
+            elif isinstance(resp, APIResponse):
+                resp = resp.to_tuple()
             return resp
 
     return wrapper

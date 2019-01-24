@@ -1,4 +1,4 @@
-from flask import current_app, _app_ctx_stack
+from flask import current_app, _app_ctx_stack, jsonify
 
 
 class APIResponse:
@@ -8,7 +8,8 @@ class APIResponse:
         self.headers = headers
 
     def to_tuple(self):
-        return self.data, self.status_code, self.headers
+        """返回make_response所用的元组，并将数据部分json化"""
+        return jsonify(self.data), self.status_code, self.headers
 
 
 class Pagination(APIResponse):

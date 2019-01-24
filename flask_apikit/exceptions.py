@@ -1,3 +1,6 @@
+from flask import jsonify
+
+
 class APIError(Exception):
     """
     所有API抛出的错误需继承自此错误,才能被捕捉,并返回给前端
@@ -5,6 +8,7 @@ class APIError(Exception):
     status_code = 400
     code = 1
     message = 'Undefined Error'
+    headers = None
 
     def __init__(self, message=None, replace=False):
         """
@@ -17,6 +21,14 @@ class APIError(Exception):
                 self.message = message
             else:
                 self.message = f'{self.message}: {message}'
+
+    def to_tuple(self):
+        """返回make_response所用的元组，并将数据部分json化"""
+        return jsonify({
+            'error': self.__class__.__name__,
+            'code': self.code,
+            'message': self.message
+        }), self.status_code, self.headers
 
 
 class ValidateError(APIError):

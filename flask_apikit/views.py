@@ -3,12 +3,12 @@ from flask.views import MethodView
 from marshmallow import Schema
 from marshmallow.exceptions import ValidationError
 
-from flask_apikit.decorators import api_view
+from flask_apikit.decorators import api_cors, api_response
 from flask_apikit.exceptions import ValidateError
 
 
 class APIView(MethodView):
-    decorators = (api_view,)
+    decorators = [api_response, api_cors]
     # 关闭View中Flask对OPTIONS请求的默认处理
     # （以防add_url_rule时methods忘记加'OPTIONS'，OPTIONS请求被Flask的dispatch_request处理）
     provide_automatic_options = False

@@ -6,9 +6,9 @@ from flask_apikit.views import APIView
 from tests import AppTestCase
 
 
-class CrossDomainTestCase(AppTestCase):
+class CORSTestCase(AppTestCase):
     def test_default_configs(self):
-        """测试默认设置"""
+        """测试没有配置时默认设置"""
 
         class Ret(APIView):
             def get(self):
@@ -16,25 +16,55 @@ class CrossDomainTestCase(AppTestCase):
 
         self.app.add_url_rule('/', methods=['OPTIONS', 'PATCH', 'GET'], view_func=Ret.as_view('ret'))
         # options
+        data, headers, status_code = self.options(url_for('ret'), headers={
+            'Origin': 'https://example.com'
+        })
+        self.assertEqual(200, status_code)
+        self.assertEqual('600', headers.get('Access-Control-Max-Age'))
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))
+        self.assertCountEqual(['PATCH', 'OPTIONS', 'GET', 'HEAD'],
+                              headers.get('Access-Control-Allow-Methods').split(', ')),
+        self.assertEqual('AUTHORIZATION, CONTENT-TYPE', headers.get('Access-Control-Allow-Headers'))
+        self.assertEqual('X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT',
+                         headers.get('Access-Control-Expose-Headers'))
+        self.assertNotIn('Access-Control-Allow-Credentials', headers)
+        # get
+        data, headers, status_code = self.get(url_for('ret'), headers={
+            'Origin': 'https://example.com'
+        })
+        self.assertEqual(200, status_code)
+        self.assertNotIn('Access-Control-Max-Age', headers)
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))
+        self.assertNotIn('Access-Control-Allow-Methods', headers)
+        self.assertNotIn('Access-Control-Allow-Headers', headers)
+        self.assertEqual('X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT',
+                         headers.get('Access-Control-Expose-Headers'))
+        self.assertNotIn('Access-Control-Allow-Credentials', headers)
+
+        # 当request没有提供Origin时
+        # options
         data, headers, status_code = self.options(url_for('ret'))
         self.assertEqual(200, status_code)
-        self.assertEqual('21600', headers['Access-Control-Max-Age'])
-        self.assertEqual('*', headers['Access-Control-Allow-Origin'])
-        self.assertCountEqual(['PATCH', 'OPTIONS', 'GET', 'HEAD'], headers['Access-Control-Allow-Methods'].split(', ')),
-        self.assertEqual('AUTHORIZATION, CONTENT-TYPE', headers['Access-Control-Allow-Headers'])
+        self.assertEqual('600', headers.get('Access-Control-Max-Age'))
+        self.assertNotIn('Access-Control-Allow-Origin', headers)
+        self.assertCountEqual(['PATCH', 'OPTIONS', 'GET', 'HEAD'],
+                              headers.get('Access-Control-Allow-Methods').split(', ')),
+        self.assertEqual('AUTHORIZATION, CONTENT-TYPE', headers.get('Access-Control-Allow-Headers'))
         self.assertEqual('X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT',
-                         headers['Access-Control-Expose-Headers'])
+                         headers.get('Access-Control-Expose-Headers'))
+        self.assertNotIn('Access-Control-Allow-Credentials', headers)
         # get
         data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(200, status_code)
-        self.assertEqual('21600', headers['Access-Control-Max-Age'])
-        self.assertEqual('*', headers['Access-Control-Allow-Origin'])
-        self.assertCountEqual(['PATCH', 'OPTIONS', 'GET', 'HEAD'], headers['Access-Control-Allow-Methods'].split(', ')),
-        self.assertEqual('AUTHORIZATION, CONTENT-TYPE', headers['Access-Control-Allow-Headers'])
+        self.assertNotIn('Access-Control-Max-Age', headers)
+        self.assertNotIn('Access-Control-Allow-Origin', headers)
+        self.assertNotIn('Access-Control-Allow-Methods', headers)
+        self.assertNotIn('Access-Control-Allow-Headers', headers)
         self.assertEqual('X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT',
-                         headers['Access-Control-Expose-Headers'])
+                         headers.get('Access-Control-Expose-Headers'))
+        self.assertNotIn('Access-Control-Allow-Credentials', headers)
 
-    def test_no_flask_automatic_options(self):
+    def test_disable_flask_automatic_options(self):
         """测试View不会走Flask的自动OPTIONS处理"""
 
         class Ret(APIView):
@@ -61,12 +91,11 @@ class CrossDomainTestCase(AppTestCase):
         data, headers, status_code = self.options(url_for('ret'))
         self.assertEqual(200, status_code)
         self.assertCountEqual(['OPTIONS', 'HEAD', 'A', 'B', 'GET'],
-                              headers['Access-Control-Allow-Methods'].split(', ')),
-        # get
+                              headers.get('Access-Control-Allow-Methods').split(', ')),
+        # 不会出现在get
         data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(200, status_code)
-        self.assertCountEqual(['OPTIONS', 'HEAD', 'A', 'B', 'GET'],
-                              headers['Access-Control-Allow-Methods'].split(', ')),
+        self.assertNotIn('Access-Control-Allow-Methods', headers)
 
     def test_max_age_none(self):
         """测试不设置MAX_AGE"""
@@ -98,11 +127,88 @@ class CrossDomainTestCase(AppTestCase):
         # options
         data, headers, status_code = self.options(url_for('ret'))
         self.assertEqual(200, status_code)
-        self.assertEqual('1', headers['Access-Control-Max-Age'])
+        self.assertEqual('1', headers.get('Access-Control-Max-Age'))
         # get
         data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(200, status_code)
-        self.assertEqual('1', headers['Access-Control-Max-Age'])
+        self.assertNotIn('Access-Control-Max-Age', headers)
+
+    def test_allow_origin_wildcard(self):
+        """测试ALLOW_ORIGIN设置为通配符（同时测试了ALLOW_CREDENTIALS的状况）"""
+        self.app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN'] = '*'
+
+        class Ret(APIView):
+            def get(self):
+                return {}
+
+        self.app.add_url_rule('/', methods=['OPTIONS', 'PATCH', 'GET'], view_func=Ret.as_view('ret'))
+
+        # request不携带Origin，不返回Allow-Origin
+        # options
+        data, headers, status_code = self.options(url_for('ret'))
+        self.assertEqual(200, status_code)
+        self.assertNotIn('Access-Control-Allow-Origin', headers)
+        self.assertNotIn('Access-Control-Allow-Credentials', headers)
+        # get
+        data, headers, status_code = self.get(url_for('ret'))
+        self.assertEqual(200, status_code)
+        self.assertNotIn('Access-Control-Allow-Origin', headers)
+        self.assertNotIn('Access-Control-Allow-Credentials', headers)
+
+        # 携带Origin，返回'*'
+        # options
+        data, headers, status_code = self.options(url_for('ret'), headers={
+            'Origin': 'https://example.com'
+        })
+        self.assertEqual(200, status_code)
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))
+        self.assertNotIn('Access-Control-Allow-Credentials', headers)
+        # get
+        data, headers, status_code = self.get(url_for('ret'), headers={
+            'Origin': 'https://example.com'
+        })
+        self.assertEqual(200, status_code)
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))
+        self.assertNotIn('Access-Control-Allow-Credentials', headers)
+
+    def test_allow_origin_wildcard_with_credentials(self):
+        """测试ALLOW_ORIGIN设置为通配符，同时允许携带证书"""
+        self.app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN'] = '*'
+        self.app.config['APIKIT_ACCESS_CONTROL_ALLOW_CREDENTIALS'] = True
+
+        class Ret(APIView):
+            def get(self):
+                return {}
+
+        self.app.add_url_rule('/', methods=['OPTIONS', 'PATCH', 'GET'], view_func=Ret.as_view('ret'))
+
+        # request不携带Origin，不返回Allow-Origin
+        # options
+        data, headers, status_code = self.options(url_for('ret'))
+        self.assertEqual(200, status_code)
+        self.assertNotIn('Access-Control-Allow-Origin', headers)
+        self.assertEqual('true', headers.get('Access-Control-Allow-Credentials'))
+        # get
+        data, headers, status_code = self.get(url_for('ret'))
+        self.assertEqual(200, status_code)
+        self.assertNotIn('Access-Control-Allow-Origin', headers)
+        self.assertEqual('true', headers.get('Access-Control-Allow-Credentials'))
+
+        # 携带Origin，因为携带了证书，返回'https://example.com'
+        # options
+        data, headers, status_code = self.options(url_for('ret'), headers={
+            'Origin': 'https://example.com'
+        })
+        self.assertEqual(200, status_code)
+        self.assertEqual('https://example.com', headers.get('Access-Control-Allow-Origin'))
+        self.assertEqual('true', headers.get('Access-Control-Allow-Credentials'))
+        # get
+        data, headers, status_code = self.get(url_for('ret'), headers={
+            'Origin': 'https://example.com'
+        })
+        self.assertEqual(200, status_code)
+        self.assertEqual('https://example.com', headers.get('Access-Control-Allow-Origin'))
+        self.assertEqual('true', headers.get('Access-Control-Allow-Credentials'))
 
     def test_allow_origin_none(self):
         """测试不设置ALLOW_ORIGIN"""
@@ -130,44 +236,44 @@ class CrossDomainTestCase(AppTestCase):
             def get(self):
                 return {}
 
-        # 不携带Origin，直接返回
+        # request不携带Origin，不返回Allow-Origin
         self.app.add_url_rule('/', methods=['OPTIONS', 'PATCH', 'GET'], view_func=Ret.as_view('ret'))
         # options
         data, headers, status_code = self.options(url_for('ret'))
         self.assertEqual(200, status_code)
-        self.assertEqual('https://example.com', headers['Access-Control-Allow-Origin'])
+        self.assertNotIn('Access-Control-Allow-Origin', headers)
         # get
         data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(200, status_code)
-        self.assertEqual('https://example.com', headers['Access-Control-Allow-Origin'])
+        self.assertNotIn('Access-Control-Allow-Origin', headers)
 
-        # 携带Origin，依旧直接返回
+        # 携带一致的Origin，返回
         # options
         data, headers, status_code = self.options(url_for('ret'), headers={
             'Origin': 'https://example.com'
         })
         self.assertEqual(200, status_code)
-        self.assertEqual('https://example.com', headers['Access-Control-Allow-Origin'])
+        self.assertEqual('https://example.com', headers.get('Access-Control-Allow-Origin'))
         # get
         data, headers, status_code = self.get(url_for('ret'), headers={
             'Origin': 'https://example.com'
         })
         self.assertEqual(200, status_code)
-        self.assertEqual('https://example.com', headers['Access-Control-Allow-Origin'])
+        self.assertEqual('https://example.com', headers.get('Access-Control-Allow-Origin'))
 
-        # 携带不一致的Origin，依旧直接返回
+        # 携带不一致的Origin，不返回
         # options
         data, headers, status_code = self.options(url_for('ret'), headers={
             'Origin': 'https://1.example.com'
         })
         self.assertEqual(200, status_code)
-        self.assertEqual('https://example.com', headers['Access-Control-Allow-Origin'])
+        self.assertNotIn('Access-Control-Allow-Origin', headers)
         # get
         data, headers, status_code = self.get(url_for('ret'), headers={
             'Origin': 'https://1.example.com'
         })
         self.assertEqual(200, status_code)
-        self.assertEqual('https://example.com', headers['Access-Control-Allow-Origin'])
+        self.assertNotIn('Access-Control-Allow-Origin', headers)
 
     def test_allow_origin_list(self):
         """测试ALLOW_ORIGIN设置为字符串，直接返回"""
@@ -199,13 +305,13 @@ class CrossDomainTestCase(AppTestCase):
             'Origin': 'https://1.example.com'
         })
         self.assertEqual(200, status_code)
-        self.assertEqual('https://1.example.com', headers['Access-Control-Allow-Origin'])
+        self.assertEqual('https://1.example.com', headers.get('Access-Control-Allow-Origin'))
         # get
         data, headers, status_code = self.get(url_for('ret'), headers={
             'Origin': 'https://1.example.com'
         })
         self.assertEqual(200, status_code)
-        self.assertEqual('https://1.example.com', headers['Access-Control-Allow-Origin'])
+        self.assertEqual('https://1.example.com', headers.get('Access-Control-Allow-Origin'))
 
         # http Origin存在于列表中时，Allow-Origin返回相应域名
         # options
@@ -213,13 +319,13 @@ class CrossDomainTestCase(AppTestCase):
             'Origin': 'http://1.example.com'
         })
         self.assertEqual(200, status_code)
-        self.assertEqual('http://1.example.com', headers['Access-Control-Allow-Origin'])
+        self.assertEqual('http://1.example.com', headers.get('Access-Control-Allow-Origin'))
         # get
         data, headers, status_code = self.get(url_for('ret'), headers={
             'Origin': 'http://1.example.com'
         })
         self.assertEqual(200, status_code)
-        self.assertEqual('http://1.example.com', headers['Access-Control-Allow-Origin'])
+        self.assertEqual('http://1.example.com', headers.get('Access-Control-Allow-Origin'))
 
         # Origin不存在于列表中时，不返回Allow-Origin
         # options
@@ -265,11 +371,11 @@ class CrossDomainTestCase(AppTestCase):
         # options
         data, headers, status_code = self.options(url_for('ret'))
         self.assertEqual(200, status_code)
-        self.assertEqual('H1, H2', headers['Access-Control-Allow-Headers'])
-        # get
+        self.assertEqual('H1, H2', headers.get('Access-Control-Allow-Headers'))
+        # 不会出现在get
         data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(200, status_code)
-        self.assertEqual('H1, H2', headers['Access-Control-Allow-Headers'])
+        self.assertNotIn('Access-Control-Allow-Headers', headers)
 
     def test_expose_headers(self):
         # todo: 测试EXPOSE_HEADERS设置
