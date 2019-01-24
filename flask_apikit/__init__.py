@@ -16,7 +16,7 @@ class APIKit:
         # 如果request.args中没有提供“每页条目数”，则默认使用的数量，默认10
         app.config.setdefault('APIKIT_PAGINATION_DEFAULT_LIMIT', 10)
         # “每页条目数”的最大值，设为0则为不限制
-        app.config.setdefault('APIKIT_PAGINATION_MAX_LIMIT', 0)
+        app.config.setdefault('APIKIT_PAGINATION_MAX_LIMIT', 100)
         # Access-Control-* 响应头配置
         app.config.setdefault('APIKIT_ACCESS_CONTROL_MAX_AGE', 600)
         app.config.setdefault('APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN', '*')

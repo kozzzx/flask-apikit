@@ -33,9 +33,9 @@ class Pagination(APIResponse):
                 page = ctx.apikit_pagination['page']
             if limit is None:
                 limit = ctx.apikit_pagination['limit']
-        # 如果page/limit仍未None则报错
+        # 如果page/limit仍为None则报错
         if None in (page, limit):
-            raise RuntimeError(
+            raise ValueError(
                 'Need use APIView.get_pagination() before Pagination() or specify parameters "page" & "limit"]'
             )
         # 拼接上分页的参数

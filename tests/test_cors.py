@@ -377,6 +377,94 @@ class CORSTestCase(AppTestCase):
         self.assertEqual(200, status_code)
         self.assertNotIn('Access-Control-Allow-Headers', headers)
 
-    def test_expose_headers(self):
-        # todo: 测试EXPOSE_HEADERS设置
-        pass
+    def test_pagination_expose_headers(self):
+        """测试分页响应头的设置"""
+        self.app.config['APIKIT_PAGINATION_HEADER_PAGE_KEY'] = 'X-Page'
+        self.app.config['APIKIT_PAGINATION_HEADER_LIMIT_KEY'] = 'X-Limit'
+        self.app.config['APIKIT_PAGINATION_HEADER_COUNT_KEY'] = 'X-Count'
+
+        class Ret(APIView):
+            def get(self):
+                return Pagination([1, 2], 1, 2, 3)
+
+        self.app.add_url_rule('/', methods=['OPTIONS', 'PATCH', 'GET'], view_func=Ret.as_view('ret'))
+        # get
+        data, headers, status_code = self.get(url_for('ret'), headers={
+            'Origin': 'https://example.com'
+        })
+        self.assertEqual(200, status_code)
+        self.assertEqual('X-PAGE, X-LIMIT, X-COUNT',
+                         headers.get('Access-Control-Expose-Headers'))
+        self.assertEqual('1', headers.get('X-COUNT'))
+        self.assertEqual('2', headers.get('X-LIMIT'))
+        self.assertEqual('3', headers.get('X-PAGE'))
+
+    def test_expose_headers1(self):
+        """自定义expose headers为空，自动插入分页expose headers"""
+        self.app.config['APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS'] = []
+        self.app.config['APIKIT_PAGINATION_AUTO_EXPOSE_HEADERS'] = True
+
+        class Ret(APIView):
+            def get(self):
+                return Pagination([1, 2], 1, 2, 3)
+
+        self.app.add_url_rule('/', methods=['OPTIONS', 'PATCH', 'GET'], view_func=Ret.as_view('ret'))
+        # get
+        data, headers, status_code = self.get(url_for('ret'), headers={
+            'Origin': 'https://example.com'
+        })
+        self.assertEqual(200, status_code)
+        self.assertEqual('X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT',
+                         headers.get('Access-Control-Expose-Headers'))
+
+    def test_expose_headers2(self):
+        """自定义expose headers不为空，自动插入分页expose headers"""
+        self.app.config['APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS'] = ['a', 'b']
+        self.app.config['APIKIT_PAGINATION_AUTO_EXPOSE_HEADERS'] = True
+
+        class Ret(APIView):
+            def get(self):
+                return Pagination([1, 2], 1, 2, 3)
+
+        self.app.add_url_rule('/', methods=['OPTIONS', 'PATCH', 'GET'], view_func=Ret.as_view('ret'))
+        # get
+        data, headers, status_code = self.get(url_for('ret'), headers={
+            'Origin': 'https://example.com'
+        })
+        self.assertEqual(200, status_code)
+        self.assertEqual('A, B, X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT',
+                         headers.get('Access-Control-Expose-Headers'))
+
+    def test_expose_headers3(self):
+        """自定义expose headers为空，不自动插入分页expose headers"""
+        self.app.config['APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS'] = []
+        self.app.config['APIKIT_PAGINATION_AUTO_EXPOSE_HEADERS'] = False
+
+        class Ret(APIView):
+            def get(self):
+                return Pagination([1, 2], 1, 2, 3)
+
+        self.app.add_url_rule('/', methods=['OPTIONS', 'PATCH', 'GET'], view_func=Ret.as_view('ret'))
+        # get
+        data, headers, status_code = self.get(url_for('ret'), headers={
+            'Origin': 'https://example.com'
+        })
+        self.assertEqual(200, status_code)
+        self.assertNotIn('Access-Control-Expose-Headers', headers)
+
+    def test_expose_headers4(self):
+        """自定义expose headers不为空，不自动插入分页expose headers"""
+        self.app.config['APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS'] = ['a', 'b']
+        self.app.config['APIKIT_PAGINATION_AUTO_EXPOSE_HEADERS'] = False
+
+        class Ret(APIView):
+            def get(self):
+                return Pagination([1, 2], 1, 2, 3)
+
+        self.app.add_url_rule('/', methods=['OPTIONS', 'PATCH', 'GET'], view_func=Ret.as_view('ret'))
+        # get
+        data, headers, status_code = self.get(url_for('ret'), headers={
+            'Origin': 'https://example.com'
+        })
+        self.assertEqual(200, status_code)
+        self.assertEqual('A, B', headers.get('Access-Control-Expose-Headers'))
