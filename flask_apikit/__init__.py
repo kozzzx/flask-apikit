@@ -24,7 +24,7 @@ class APIKit:
         app.config.setdefault('APIKIT_ACCESS_CONTROL_ALLOW_CREDENTIALS', False)
         app.config.setdefault('APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS', [])
         # 分页返回的响应头的key
-        app.config.setdefault('APIKIT_PAGINATION_AUTO_EXPOSE_HEADERS', True)
+        app.config.setdefault('APIKIT_PAGINATION_AUTO_EXPOSE_HEADERS', True)  # todo: 删除这个配置
         app.config.setdefault('APIKIT_PAGINATION_HEADER_PAGE_KEY', 'X-Pagination-Page')  # 当前页码
         app.config.setdefault('APIKIT_PAGINATION_HEADER_LIMIT_KEY', 'X-Pagination-Limit')  # 每页个数
         app.config.setdefault('APIKIT_PAGINATION_HEADER_COUNT_KEY', 'X-Pagination-Count')  # 元素总个数

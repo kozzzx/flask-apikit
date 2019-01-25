@@ -148,14 +148,14 @@ class BaseTestCase(AppTestCase):
                 return [1, 2], {'XXX': 'x'}
 
         self.app.add_url_rule('/', methods=['GET'], view_func=Ret.as_view('ret'))
-        data, headers, status_code = self.get(url_for('ret'))
+
+        data, headers, status_code = self.get(url_for('ret'), headers={
+            'Origin': 'https://example.com'
+        })
         self.assertEqual(status_code, 200)
         self.assertEqual(headers.get('XXX'), 'x')
-        # 不会覆盖掉api_cors处理的头
-        self.assertEqual(
-            headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
-        )
+        # todo: 如下修改所有不会覆盖掉头的测试
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))  # 不会覆盖掉api_cors处理的头
         self.assertEqual(data[0], 1)
         self.assertEqual(data[1], 2)
 
@@ -251,6 +251,7 @@ class BaseTestCase(AppTestCase):
         data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(status_code, 200)
         self.assertEqual(headers.get('XXX'), 'x')
+        print(headers)
         # 不会覆盖掉api_cors处理的头
         self.assertEqual(
             headers.get('Access-Control-Expose-Headers'),

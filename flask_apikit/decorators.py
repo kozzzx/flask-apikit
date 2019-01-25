@@ -8,7 +8,7 @@ from flask_apikit.responses import APIResponse
 
 def api_cors(func):
     """处理Response的CORS响应头"""
-
+    # todo: 根据cors流程图重新完善此装饰器流程
     @wraps(func)
     def wrapper(*args, **kwargs):
 
@@ -68,22 +68,14 @@ def api_cors(func):
                         h['Access-Control-Allow-Origin'] = origin
         # ==> Access-Control-Expose-Headers
         if current_app.config['APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS']:
-            h['Access-Control-Expose-Headers'] = ', '.join(
-                x.upper() for x in current_app.config['APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS']
-            )
-        # ==> 自动加入分页所用的 Access-Control-Expose-Headers
-        if current_app.config['APIKIT_PAGINATION_AUTO_EXPOSE_HEADERS']:
-            # 之前有添加过Expose-Headers，则再加一个逗号
-            if current_app.config['APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS']:
+            # 如果已有Expose-Headers，同时有值，则加一个逗号
+            if 'Access-Control-Expose-Headers' in h and h['Access-Control-Expose-Headers']:
                 h['Access-Control-Expose-Headers'] += ', '
             else:
                 h['Access-Control-Expose-Headers'] = ''
-            h['Access-Control-Expose-Headers'] += ', '.join(x.upper() for x in [
-                current_app.config['APIKIT_PAGINATION_HEADER_PAGE_KEY'],
-                current_app.config['APIKIT_PAGINATION_HEADER_LIMIT_KEY'],
-                current_app.config['APIKIT_PAGINATION_HEADER_COUNT_KEY'],
-                current_app.config['APIKIT_PAGINATION_HEADER_PAGE_COUNT_KEY']
-            ])
+            h['Access-Control-Expose-Headers'] += ', '.join(
+                x.upper() for x in current_app.config['APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS']
+            )
         return resp
 
     return wrapper
