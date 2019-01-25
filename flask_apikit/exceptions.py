@@ -4,6 +4,7 @@ from flask import jsonify
 class APIError(Exception):
     """
     所有API抛出的错误需继承自此错误,才能被捕捉,并返回给前端
+    1-99为APIKit所用的code
     """
     status_code = 400
     code = 1

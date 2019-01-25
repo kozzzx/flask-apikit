@@ -12,14 +12,15 @@ class PaginationTestCase(AppTestCase):
 
         class Ret(APIView):
             def get(self):
-                return Pagination([1, 2], count=100, page=2, limit=10)
+                return Pagination([1, 2], count=101, page=2, limit=10)
 
         self.app.add_url_rule('/', methods=['GET'], view_func=Ret.as_view('ret'))
         data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(status_code, 200)
-        self.assertEqual(headers.get('X-Pagination-Count'), '100')
+        self.assertEqual(headers.get('X-Pagination-Count'), '101')
         self.assertEqual(headers.get('X-Pagination-Limit'), '10')
         self.assertEqual(headers.get('X-Pagination-Page'), '2')
+        self.assertEqual(headers.get('X-Pagination-Page-Count'), '11')
         self.assertEqual(data[0], 1)
         self.assertEqual(data[1], 2)
 
@@ -36,6 +37,7 @@ class PaginationTestCase(AppTestCase):
         self.assertEqual(headers.get('X-Pagination-Count'), '100')
         self.assertEqual(headers.get('X-Pagination-Limit'), '10')
         self.assertEqual(headers.get('X-Pagination-Page'), '2')
+        self.assertEqual(headers.get('X-Pagination-Page-Count'), '10')
         self.assertEqual(data[0], 1)
         self.assertEqual(data[1], 2)
 
@@ -44,14 +46,15 @@ class PaginationTestCase(AppTestCase):
 
         class Ret(APIView):
             def get(self):
-                return Pagination([1, 2], count=100, page=2, limit=10, headers={'AAA': 'a', 'bbb': 'B'})
+                return Pagination([1, 2], count=99, page=2, limit=10, headers={'AAA': 'a', 'bbb': 'B'})
 
         self.app.add_url_rule('/', methods=['GET'], view_func=Ret.as_view('ret'))
         data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(status_code, 200)
-        self.assertEqual(headers.get('X-Pagination-Count'), '100')
+        self.assertEqual(headers.get('X-Pagination-Count'), '99')
         self.assertEqual(headers.get('X-Pagination-Limit'), '10')
         self.assertEqual(headers.get('X-Pagination-Page'), '2')
+        self.assertEqual(headers.get('X-Pagination-Page-Count'), '10')
         self.assertEqual(headers.get('AAA'), 'a')
         self.assertEqual(headers.get('bbb'), 'B')
         self.assertEqual(data[0], 1)
@@ -63,14 +66,15 @@ class PaginationTestCase(AppTestCase):
         class Ret(APIView):
             def get(self):
                 self.get_pagination()
-                return Pagination([1, 2], count=100)
+                return Pagination([1, 2], count=101)
 
         self.app.add_url_rule('/', methods=['GET'], view_func=Ret.as_view('ret'))
-        data, headers, status_code = self.get(url_for('ret'), query_string={'page': 2, 'limit': 2})
+        data, headers, status_code = self.get(url_for('ret'), query_string={'page': 2, 'limit': 100})
         self.assertEqual(status_code, 200)
-        self.assertEqual(headers.get('X-Pagination-Count'), '100')
-        self.assertEqual(headers.get('X-Pagination-Limit'), '2')
+        self.assertEqual(headers.get('X-Pagination-Count'), '101')
+        self.assertEqual(headers.get('X-Pagination-Limit'), '100')
         self.assertEqual(headers.get('X-Pagination-Page'), '2')
+        self.assertEqual(headers.get('X-Pagination-Page-Count'), '2')
         self.assertEqual(data[0], 1)
         self.assertEqual(data[1], 2)
 

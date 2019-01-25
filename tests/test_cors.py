@@ -25,7 +25,7 @@ class CORSTestCase(AppTestCase):
         self.assertCountEqual(['PATCH', 'OPTIONS', 'GET', 'HEAD'],
                               headers.get('Access-Control-Allow-Methods').split(', ')),
         self.assertEqual('AUTHORIZATION, CONTENT-TYPE', headers.get('Access-Control-Allow-Headers'))
-        self.assertEqual('X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT',
+        self.assertEqual('X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT',
                          headers.get('Access-Control-Expose-Headers'))
         self.assertNotIn('Access-Control-Allow-Credentials', headers)
         # get
@@ -37,7 +37,7 @@ class CORSTestCase(AppTestCase):
         self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))
         self.assertNotIn('Access-Control-Allow-Methods', headers)
         self.assertNotIn('Access-Control-Allow-Headers', headers)
-        self.assertEqual('X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT',
+        self.assertEqual('X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT',
                          headers.get('Access-Control-Expose-Headers'))
         self.assertNotIn('Access-Control-Allow-Credentials', headers)
 
@@ -50,7 +50,7 @@ class CORSTestCase(AppTestCase):
         self.assertCountEqual(['PATCH', 'OPTIONS', 'GET', 'HEAD'],
                               headers.get('Access-Control-Allow-Methods').split(', ')),
         self.assertEqual('AUTHORIZATION, CONTENT-TYPE', headers.get('Access-Control-Allow-Headers'))
-        self.assertEqual('X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT',
+        self.assertEqual('X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT',
                          headers.get('Access-Control-Expose-Headers'))
         self.assertNotIn('Access-Control-Allow-Credentials', headers)
         # get
@@ -60,7 +60,7 @@ class CORSTestCase(AppTestCase):
         self.assertNotIn('Access-Control-Allow-Origin', headers)
         self.assertNotIn('Access-Control-Allow-Methods', headers)
         self.assertNotIn('Access-Control-Allow-Headers', headers)
-        self.assertEqual('X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT',
+        self.assertEqual('X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT',
                          headers.get('Access-Control-Expose-Headers'))
         self.assertNotIn('Access-Control-Allow-Credentials', headers)
 
@@ -382,6 +382,7 @@ class CORSTestCase(AppTestCase):
         self.app.config['APIKIT_PAGINATION_HEADER_PAGE_KEY'] = 'X-Page'
         self.app.config['APIKIT_PAGINATION_HEADER_LIMIT_KEY'] = 'X-Limit'
         self.app.config['APIKIT_PAGINATION_HEADER_COUNT_KEY'] = 'X-Count'
+        self.app.config['APIKIT_PAGINATION_HEADER_PAGE_COUNT_KEY'] = 'X-Page-Count'
 
         class Ret(APIView):
             def get(self):
@@ -393,11 +394,12 @@ class CORSTestCase(AppTestCase):
             'Origin': 'https://example.com'
         })
         self.assertEqual(200, status_code)
-        self.assertEqual('X-PAGE, X-LIMIT, X-COUNT',
+        self.assertEqual('X-PAGE, X-LIMIT, X-COUNT, X-PAGE-COUNT',
                          headers.get('Access-Control-Expose-Headers'))
         self.assertEqual('1', headers.get('X-COUNT'))
         self.assertEqual('2', headers.get('X-LIMIT'))
         self.assertEqual('3', headers.get('X-PAGE'))
+        self.assertEqual('1', headers.get('X-PAGE-COUNT'))
 
     def test_expose_headers1(self):
         """自定义expose headers为空，自动插入分页expose headers"""
@@ -414,7 +416,7 @@ class CORSTestCase(AppTestCase):
             'Origin': 'https://example.com'
         })
         self.assertEqual(200, status_code)
-        self.assertEqual('X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT',
+        self.assertEqual('X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT',
                          headers.get('Access-Control-Expose-Headers'))
 
     def test_expose_headers2(self):
@@ -432,7 +434,7 @@ class CORSTestCase(AppTestCase):
             'Origin': 'https://example.com'
         })
         self.assertEqual(200, status_code)
-        self.assertEqual('A, B, X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT',
+        self.assertEqual('A, B, X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT',
                          headers.get('Access-Control-Expose-Headers'))
 
     def test_expose_headers3(self):

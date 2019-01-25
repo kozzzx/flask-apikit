@@ -57,7 +57,7 @@ class BaseTestCase(AppTestCase):
         # 不会覆盖掉api_cors处理的头
         self.assertEqual(
             headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT'
+            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
         )
 
     def test_return_str_with_headers2(self):
@@ -75,7 +75,7 @@ class BaseTestCase(AppTestCase):
         # 不会覆盖掉api_cors处理的头
         self.assertEqual(
             headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT'
+            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
         )
 
     def test_return_str_with_status_and_headers(self):
@@ -93,7 +93,7 @@ class BaseTestCase(AppTestCase):
         # 不会覆盖掉api_cors处理的头
         self.assertEqual(
             headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT'
+            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
         )
 
     def test_return_str_with_status_and_headers2(self):
@@ -111,7 +111,7 @@ class BaseTestCase(AppTestCase):
         # 不会覆盖掉api_cors处理的头
         self.assertEqual(
             headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT'
+            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
         )
 
     def test_return_list(self):
@@ -154,7 +154,7 @@ class BaseTestCase(AppTestCase):
         # 不会覆盖掉api_cors处理的头
         self.assertEqual(
             headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT'
+            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
         )
         self.assertEqual(data[0], 1)
         self.assertEqual(data[1], 2)
@@ -173,7 +173,7 @@ class BaseTestCase(AppTestCase):
         # 不会覆盖掉api_cors处理的头
         self.assertEqual(
             headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT'
+            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
         )
         self.assertEqual(data[0], 1)
         self.assertEqual(data[1], 2)
@@ -192,7 +192,7 @@ class BaseTestCase(AppTestCase):
         # 不会覆盖掉api_cors处理的头
         self.assertEqual(
             headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT'
+            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
         )
         self.assertEqual(data[0], 1)
         self.assertEqual(data[1], 2)
@@ -211,7 +211,7 @@ class BaseTestCase(AppTestCase):
         # 不会覆盖掉api_cors处理的头
         self.assertEqual(
             headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT'
+            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
         )
         self.assertEqual(data[0], 1)
         self.assertEqual(data[1], 2)
@@ -254,7 +254,7 @@ class BaseTestCase(AppTestCase):
         # 不会覆盖掉api_cors处理的头
         self.assertEqual(
             headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT'
+            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
         )
         self.assertEqual(data['hi'], 123)
 
@@ -272,7 +272,7 @@ class BaseTestCase(AppTestCase):
         # 不会覆盖掉api_cors处理的头
         self.assertEqual(
             headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT'
+            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
         )
         self.assertEqual(data['hi'], 123)
 
@@ -290,7 +290,7 @@ class BaseTestCase(AppTestCase):
         # 不会覆盖掉api_cors处理的头
         self.assertEqual(
             headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT'
+            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
         )
         self.assertEqual(data['hi'], 123)
 
@@ -308,7 +308,7 @@ class BaseTestCase(AppTestCase):
         # 不会覆盖掉api_cors处理的头
         self.assertEqual(
             headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT'
+            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
         )
         self.assertEqual(data['hi'], 123)
 
@@ -381,7 +381,7 @@ class BaseTestCase(AppTestCase):
         # 不会覆盖掉api_cors处理的头
         self.assertEqual(
             headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT'
+            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
         )
 
     def test_return_error_with_headers2(self):
@@ -405,7 +405,7 @@ class BaseTestCase(AppTestCase):
         # 不会覆盖掉api_cors处理的头
         self.assertEqual(
             headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT'
+            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
         )
 
     def test_return_error_with_status_and_headers(self):
@@ -430,7 +430,7 @@ class BaseTestCase(AppTestCase):
         # 不会覆盖掉api_cors处理的头
         self.assertEqual(
             headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT'
+            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
         )
 
     def test_return_api_response(self):
@@ -478,7 +478,7 @@ class BaseTestCase(AppTestCase):
         # 不会覆盖掉api_cors处理的头
         self.assertEqual(
             headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT'
+            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
         )
 
     def test_return_api_response_with_headers2(self):
@@ -498,7 +498,7 @@ class BaseTestCase(AppTestCase):
         # 不会覆盖掉api_cors处理的头
         self.assertEqual(
             headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT'
+            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
         )
 
     def test_return_api_response_with_status_and_headers(self):
@@ -518,7 +518,7 @@ class BaseTestCase(AppTestCase):
         # 不会覆盖掉api_cors处理的头
         self.assertEqual(
             headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT'
+            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
         )
 
     def test_return_api_response_with_status_and_headers2(self):
@@ -538,5 +538,5 @@ class BaseTestCase(AppTestCase):
         # 不会覆盖掉api_cors处理的头
         self.assertEqual(
             headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT'
+            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
         )

@@ -25,9 +25,10 @@ class APIKit:
         app.config.setdefault('APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS', [])
         # 分页返回的响应头的key
         app.config.setdefault('APIKIT_PAGINATION_AUTO_EXPOSE_HEADERS', True)
-        app.config.setdefault('APIKIT_PAGINATION_HEADER_PAGE_KEY', 'X-Pagination-Page')
-        app.config.setdefault('APIKIT_PAGINATION_HEADER_LIMIT_KEY', 'X-Pagination-Limit')
-        app.config.setdefault('APIKIT_PAGINATION_HEADER_COUNT_KEY', 'X-Pagination-Count')
+        app.config.setdefault('APIKIT_PAGINATION_HEADER_PAGE_KEY', 'X-Pagination-Page')  # 当前页码
+        app.config.setdefault('APIKIT_PAGINATION_HEADER_LIMIT_KEY', 'X-Pagination-Limit')  # 每页个数
+        app.config.setdefault('APIKIT_PAGINATION_HEADER_COUNT_KEY', 'X-Pagination-Count')  # 元素总个数
+        app.config.setdefault('APIKIT_PAGINATION_HEADER_PAGE_COUNT_KEY', 'X-Pagination-Page-Count')  # 总页数
         app.teardown_appcontext(self.teardown)
 
     @property

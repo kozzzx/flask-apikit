@@ -1,3 +1,4 @@
+import math
 from flask import current_app, _app_ctx_stack, jsonify
 
 
@@ -42,4 +43,5 @@ class Pagination(APIResponse):
         headers[current_app.config['APIKIT_PAGINATION_HEADER_PAGE_KEY']] = page
         headers[current_app.config['APIKIT_PAGINATION_HEADER_LIMIT_KEY']] = limit
         headers[current_app.config['APIKIT_PAGINATION_HEADER_COUNT_KEY']] = count
+        headers[current_app.config['APIKIT_PAGINATION_HEADER_PAGE_COUNT_KEY']] = math.ceil(count / limit)
         super().__init__(data, status_code, headers)

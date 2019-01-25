@@ -81,7 +81,8 @@ def api_cors(func):
             h['Access-Control-Expose-Headers'] += ', '.join(x.upper() for x in [
                 current_app.config['APIKIT_PAGINATION_HEADER_PAGE_KEY'],
                 current_app.config['APIKIT_PAGINATION_HEADER_LIMIT_KEY'],
-                current_app.config['APIKIT_PAGINATION_HEADER_COUNT_KEY']
+                current_app.config['APIKIT_PAGINATION_HEADER_COUNT_KEY'],
+                current_app.config['APIKIT_PAGINATION_HEADER_PAGE_COUNT_KEY']
             ])
         return resp
 
