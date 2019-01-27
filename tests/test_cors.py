@@ -16,52 +16,43 @@ class CORSTestCase(AppTestCase):
 
         self.app.add_url_rule('/', methods=['OPTIONS', 'PATCH', 'GET'], view_func=Ret.as_view('ret'))
         # options
-        data, headers, status_code = self.options(url_for('ret'), headers={
-            'Origin': 'https://example.com'
-        })
-        self.assertEqual(200, status_code)
-        self.assertEqual('600', headers.get('Access-Control-Max-Age'))
-        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))
-        self.assertCountEqual(['PATCH', 'OPTIONS', 'GET', 'HEAD'],
-                              headers.get('Access-Control-Allow-Methods').split(', ')),
-        self.assertEqual('AUTHORIZATION, CONTENT-TYPE', headers.get('Access-Control-Allow-Headers'))
-        self.assertEqual('X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT',
-                         headers.get('Access-Control-Expose-Headers'))
-        self.assertNotIn('Access-Control-Allow-Credentials', headers)
-        # get
-        data, headers, status_code = self.get(url_for('ret'), headers={
-            'Origin': 'https://example.com'
-        })
-        self.assertEqual(200, status_code)
-        self.assertNotIn('Access-Control-Max-Age', headers)
-        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))
-        self.assertNotIn('Access-Control-Allow-Methods', headers)
-        self.assertNotIn('Access-Control-Allow-Headers', headers)
-        self.assertEqual('X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT',
-                         headers.get('Access-Control-Expose-Headers'))
-        self.assertNotIn('Access-Control-Allow-Credentials', headers)
-
-        # 当request没有提供Origin时
-        # options
         data, headers, status_code = self.options(url_for('ret'))
         self.assertEqual(200, status_code)
         self.assertEqual('600', headers.get('Access-Control-Max-Age'))
-        self.assertNotIn('Access-Control-Allow-Origin', headers)
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))
         self.assertCountEqual(['PATCH', 'OPTIONS', 'GET', 'HEAD'],
                               headers.get('Access-Control-Allow-Methods').split(', ')),
         self.assertEqual('AUTHORIZATION, CONTENT-TYPE', headers.get('Access-Control-Allow-Headers'))
-        self.assertEqual('X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT',
-                         headers.get('Access-Control-Expose-Headers'))
+        self.assertNotIn('Access-Control-Expose-Headers', headers)
         self.assertNotIn('Access-Control-Allow-Credentials', headers)
         # get
         data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(200, status_code)
         self.assertNotIn('Access-Control-Max-Age', headers)
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))
+        self.assertNotIn('Access-Control-Allow-Methods', headers)
+        self.assertNotIn('Access-Control-Allow-Headers', headers)
+        self.assertNotIn('Access-Control-Expose-Headers', headers)
+        self.assertNotIn('Access-Control-Allow-Credentials', headers)
+
+        # 当request没有提供Origin时，报错
+        # options
+        data, headers, status_code = self.options(url_for('ret'), headers={})
+        self.assertEqual(400, status_code)
+        self.assertNotIn('Access-Control-Max-Age', headers)
         self.assertNotIn('Access-Control-Allow-Origin', headers)
         self.assertNotIn('Access-Control-Allow-Methods', headers)
         self.assertNotIn('Access-Control-Allow-Headers', headers)
-        self.assertEqual('X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT',
-                         headers.get('Access-Control-Expose-Headers'))
+        self.assertNotIn('Access-Control-Expose-Headers', headers)
+        self.assertNotIn('Access-Control-Allow-Credentials', headers)
+        # get
+        data, headers, status_code = self.get(url_for('ret'), headers={})
+        self.assertEqual(400, status_code)
+        self.assertNotIn('Access-Control-Max-Age', headers)
+        self.assertNotIn('Access-Control-Allow-Origin', headers)
+        self.assertNotIn('Access-Control-Allow-Methods', headers)
+        self.assertNotIn('Access-Control-Allow-Headers', headers)
+        self.assertNotIn('Access-Control-Expose-Headers', headers)
         self.assertNotIn('Access-Control-Allow-Credentials', headers)
 
     def test_disable_flask_automatic_options(self):
@@ -143,30 +134,26 @@ class CORSTestCase(AppTestCase):
 
         self.app.add_url_rule('/', methods=['OPTIONS', 'PATCH', 'GET'], view_func=Ret.as_view('ret'))
 
-        # request不携带Origin，不返回Allow-Origin
+        # request不携带Origin，报错
         # options
-        data, headers, status_code = self.options(url_for('ret'))
-        self.assertEqual(200, status_code)
+        data, headers, status_code = self.options(url_for('ret'), headers={})
+        self.assertEqual(400, status_code)
         self.assertNotIn('Access-Control-Allow-Origin', headers)
         self.assertNotIn('Access-Control-Allow-Credentials', headers)
         # get
-        data, headers, status_code = self.get(url_for('ret'))
-        self.assertEqual(200, status_code)
+        data, headers, status_code = self.get(url_for('ret'), headers={})
+        self.assertEqual(400, status_code)
         self.assertNotIn('Access-Control-Allow-Origin', headers)
         self.assertNotIn('Access-Control-Allow-Credentials', headers)
 
         # 携带Origin，返回'*'
         # options
-        data, headers, status_code = self.options(url_for('ret'), headers={
-            'Origin': 'https://example.com'
-        })
+        data, headers, status_code = self.options(url_for('ret'))
         self.assertEqual(200, status_code)
         self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))
         self.assertNotIn('Access-Control-Allow-Credentials', headers)
         # get
-        data, headers, status_code = self.get(url_for('ret'), headers={
-            'Origin': 'https://example.com'
-        })
+        data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(200, status_code)
         self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))
         self.assertNotIn('Access-Control-Allow-Credentials', headers)
@@ -182,30 +169,26 @@ class CORSTestCase(AppTestCase):
 
         self.app.add_url_rule('/', methods=['OPTIONS', 'PATCH', 'GET'], view_func=Ret.as_view('ret'))
 
-        # request不携带Origin，不返回Allow-Origin
+        # request不携带Origin，报错
         # options
-        data, headers, status_code = self.options(url_for('ret'))
-        self.assertEqual(200, status_code)
+        data, headers, status_code = self.options(url_for('ret'), headers={})
+        self.assertEqual(400, status_code)
         self.assertNotIn('Access-Control-Allow-Origin', headers)
-        self.assertEqual('true', headers.get('Access-Control-Allow-Credentials'))
+        self.assertNotIn('Access-Control-Allow-Credentials', headers)
         # get
-        data, headers, status_code = self.get(url_for('ret'))
-        self.assertEqual(200, status_code)
+        data, headers, status_code = self.get(url_for('ret'), headers={})
+        self.assertEqual(400, status_code)
         self.assertNotIn('Access-Control-Allow-Origin', headers)
-        self.assertEqual('true', headers.get('Access-Control-Allow-Credentials'))
+        self.assertNotIn('Access-Control-Allow-Credentials', headers)
 
         # 携带Origin，因为携带了证书，返回'https://example.com'
         # options
-        data, headers, status_code = self.options(url_for('ret'), headers={
-            'Origin': 'https://example.com'
-        })
+        data, headers, status_code = self.options(url_for('ret'))
         self.assertEqual(200, status_code)
         self.assertEqual('https://example.com', headers.get('Access-Control-Allow-Origin'))
         self.assertEqual('true', headers.get('Access-Control-Allow-Credentials'))
         # get
-        data, headers, status_code = self.get(url_for('ret'), headers={
-            'Origin': 'https://example.com'
-        })
+        data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(200, status_code)
         self.assertEqual('https://example.com', headers.get('Access-Control-Allow-Origin'))
         self.assertEqual('true', headers.get('Access-Control-Allow-Credentials'))
@@ -236,28 +219,24 @@ class CORSTestCase(AppTestCase):
             def get(self):
                 return {}
 
-        # request不携带Origin，不返回Allow-Origin
+        # request不携带Origin，报错
         self.app.add_url_rule('/', methods=['OPTIONS', 'PATCH', 'GET'], view_func=Ret.as_view('ret'))
         # options
-        data, headers, status_code = self.options(url_for('ret'))
-        self.assertEqual(200, status_code)
+        data, headers, status_code = self.options(url_for('ret'), headers={})
+        self.assertEqual(400, status_code)
         self.assertNotIn('Access-Control-Allow-Origin', headers)
         # get
-        data, headers, status_code = self.get(url_for('ret'))
-        self.assertEqual(200, status_code)
+        data, headers, status_code = self.get(url_for('ret'), headers={})
+        self.assertEqual(400, status_code)
         self.assertNotIn('Access-Control-Allow-Origin', headers)
 
         # 携带一致的Origin，返回
         # options
-        data, headers, status_code = self.options(url_for('ret'), headers={
-            'Origin': 'https://example.com'
-        })
+        data, headers, status_code = self.options(url_for('ret'))
         self.assertEqual(200, status_code)
         self.assertEqual('https://example.com', headers.get('Access-Control-Allow-Origin'))
         # get
-        data, headers, status_code = self.get(url_for('ret'), headers={
-            'Origin': 'https://example.com'
-        })
+        data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(200, status_code)
         self.assertEqual('https://example.com', headers.get('Access-Control-Allow-Origin'))
 
@@ -289,14 +268,14 @@ class CORSTestCase(AppTestCase):
 
         self.app.add_url_rule('/', methods=['OPTIONS', 'PATCH', 'GET'], view_func=Ret.as_view('ret'))
 
-        # 请求没有Origin时，不返回Allow-Origin
+        # 请求没有Origin时，报错
         # options
-        data, headers, status_code = self.options(url_for('ret'))
-        self.assertEqual(200, status_code)
+        data, headers, status_code = self.options(url_for('ret'), headers={})
+        self.assertEqual(400, status_code)
         self.assertNotIn('Access-Control-Allow-Origin', headers)
         # get
-        data, headers, status_code = self.get(url_for('ret'))
-        self.assertEqual(200, status_code)
+        data, headers, status_code = self.get(url_for('ret'), headers={})
+        self.assertEqual(400, status_code)
         self.assertNotIn('Access-Control-Allow-Origin', headers)
 
         # Origin存在于列表中时，Allow-Origin返回相应域名
@@ -361,7 +340,7 @@ class CORSTestCase(AppTestCase):
 
     def test_allow_headers(self):
         """测试ALLOW_HEADERS设置"""
-        self.app.config['APIKIT_ACCESS_CONTROL_ALLOW_HEADERS'] = ['h1', 'h2']
+        self.app.config['APIKIT_ACCESS_CONTROL_ALLOW_HEADERS'] = ['X-Aa', 'X-Ab']
 
         class Ret(APIView):
             def get(self):
@@ -371,7 +350,7 @@ class CORSTestCase(AppTestCase):
         # options
         data, headers, status_code = self.options(url_for('ret'))
         self.assertEqual(200, status_code)
-        self.assertEqual('H1, H2', headers.get('Access-Control-Allow-Headers'))
+        self.assertEqual('X-AA, X-AB', headers.get('Access-Control-Allow-Headers'))
         # 不会出现在get
         data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(200, status_code)
@@ -386,87 +365,106 @@ class CORSTestCase(AppTestCase):
 
         class Ret(APIView):
             def get(self):
-                return Pagination([1, 2], 1, 2, 3)
+                return Pagination().set_data([1, 2], 4)
 
         self.app.add_url_rule('/', methods=['OPTIONS', 'PATCH', 'GET'], view_func=Ret.as_view('ret'))
         # get
-        data, headers, status_code = self.get(url_for('ret'), headers={
-            'Origin': 'https://example.com'
-        })
+        data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(200, status_code)
         self.assertEqual('X-PAGE, X-LIMIT, X-COUNT, X-PAGE-COUNT',
                          headers.get('Access-Control-Expose-Headers'))
-        self.assertEqual('1', headers.get('X-COUNT'))
-        self.assertEqual('2', headers.get('X-LIMIT'))
-        self.assertEqual('3', headers.get('X-PAGE'))
+        self.assertEqual('4', headers.get('X-COUNT'))
+        self.assertEqual('10', headers.get('X-LIMIT'))
+        self.assertEqual('1', headers.get('X-PAGE'))
         self.assertEqual('1', headers.get('X-PAGE-COUNT'))
 
     def test_expose_headers1(self):
         """自定义expose headers为空，自动插入分页expose headers"""
         self.app.config['APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS'] = []
-        self.app.config['APIKIT_PAGINATION_AUTO_EXPOSE_HEADERS'] = True
 
         class Ret(APIView):
             def get(self):
-                return Pagination([1, 2], 1, 2, 3)
+                return Pagination().set_data([1, 2], 4)
 
         self.app.add_url_rule('/', methods=['OPTIONS', 'PATCH', 'GET'], view_func=Ret.as_view('ret'))
         # get
-        data, headers, status_code = self.get(url_for('ret'), headers={
-            'Origin': 'https://example.com'
-        })
+        data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(200, status_code)
         self.assertEqual('X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT',
                          headers.get('Access-Control-Expose-Headers'))
 
     def test_expose_headers2(self):
         """自定义expose headers不为空，自动插入分页expose headers"""
-        self.app.config['APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS'] = ['a', 'b']
-        self.app.config['APIKIT_PAGINATION_AUTO_EXPOSE_HEADERS'] = True
+        self.app.config['APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS'] = ['X-Ea', 'X-Eb']
 
         class Ret(APIView):
             def get(self):
-                return Pagination([1, 2], 1, 2, 3)
+                return Pagination().set_data([1, 2], 4)
 
         self.app.add_url_rule('/', methods=['OPTIONS', 'PATCH', 'GET'], view_func=Ret.as_view('ret'))
         # get
-        data, headers, status_code = self.get(url_for('ret'), headers={
-            'Origin': 'https://example.com'
-        })
+        data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(200, status_code)
-        self.assertEqual('A, B, X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT',
-                         headers.get('Access-Control-Expose-Headers'))
+        self.assertEqual(
+            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT, X-EA, X-EB',
+            headers.get('Access-Control-Expose-Headers'))
 
     def test_expose_headers3(self):
         """自定义expose headers为空，不自动插入分页expose headers"""
         self.app.config['APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS'] = []
-        self.app.config['APIKIT_PAGINATION_AUTO_EXPOSE_HEADERS'] = False
 
         class Ret(APIView):
             def get(self):
-                return Pagination([1, 2], 1, 2, 3)
+                return Pagination(auto_expose_headers=False).set_data([1, 2], 4)
 
         self.app.add_url_rule('/', methods=['OPTIONS', 'PATCH', 'GET'], view_func=Ret.as_view('ret'))
         # get
-        data, headers, status_code = self.get(url_for('ret'), headers={
-            'Origin': 'https://example.com'
-        })
+        data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(200, status_code)
         self.assertNotIn('Access-Control-Expose-Headers', headers)
 
     def test_expose_headers4(self):
         """自定义expose headers不为空，不自动插入分页expose headers"""
-        self.app.config['APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS'] = ['a', 'b']
-        self.app.config['APIKIT_PAGINATION_AUTO_EXPOSE_HEADERS'] = False
+        self.app.config['APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS'] = ['X-Ea', 'X-Eb']
 
         class Ret(APIView):
             def get(self):
-                return Pagination([1, 2], 1, 2, 3)
+                return Pagination(auto_expose_headers=False).set_data([1, 2], 4)
 
         self.app.add_url_rule('/', methods=['OPTIONS', 'PATCH', 'GET'], view_func=Ret.as_view('ret'))
         # get
-        data, headers, status_code = self.get(url_for('ret'), headers={
-            'Origin': 'https://example.com'
-        })
+        data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(200, status_code)
-        self.assertEqual('A, B', headers.get('Access-Control-Expose-Headers'))
+        self.assertEqual('X-EA, X-EB', headers.get('Access-Control-Expose-Headers'))
+
+    def test_expose_headers5(self):
+        """测试Pagination设置了Access-Control-Expose-Headers头，不会被后两者覆盖"""
+        self.app.config['APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS'] = ['X-Ea', 'X-Eb']
+
+        class Ret(APIView):
+            def get(self):
+                return Pagination(headers={'Access-Control-Expose-Headers': 'X-Pa, X-Pb'}).set_data([1, 2], 4)
+
+        self.app.add_url_rule('/', methods=['OPTIONS', 'PATCH', 'GET'], view_func=Ret.as_view('ret'))
+        # get
+        data, headers, status_code = self.get(url_for('ret'))
+        self.assertEqual(200, status_code)
+        self.assertEqual(
+            'X-Pa, X-Pb, X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT, X-EA, X-EB',
+            headers.get('Access-Control-Expose-Headers'))
+
+    def test_expose_headers6(self):
+        """测试APIView设置了Access-Control-Expose-Headers头，不会被APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS覆盖"""
+        self.app.config['APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS'] = ['X-Ea', 'X-Eb']
+
+        class Ret(APIView):
+            def get(self):
+                return [1, 2], {'Access-Control-Expose-Headers': 'X-Va, X-Vb'}
+
+        self.app.add_url_rule('/', methods=['OPTIONS', 'PATCH', 'GET'], view_func=Ret.as_view('ret'))
+        # get
+        data, headers, status_code = self.get(url_for('ret'))
+        self.assertEqual(200, status_code)
+        self.assertEqual(
+            'X-Va, X-Vb, X-EA, X-EB',
+            headers.get('Access-Control-Expose-Headers'))

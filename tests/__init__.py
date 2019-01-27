@@ -22,8 +22,11 @@ class AppTestCase(TestCase):
         if client is None:
             client = self.client
         # 增加headers
-        if not kwargs.get('headers'):
-            kwargs['headers'] = {}
+        if kwargs.get('headers') is None:
+            kwargs['headers'] = {
+                # 默认增加跨域参数
+                'Origin': 'https://example.com'
+            }
         # 如果给予data参数,则转换为json
         data = kwargs.pop('json', None)
         if data:

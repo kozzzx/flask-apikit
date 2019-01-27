@@ -52,6 +52,7 @@ class ValidateError(APIError):
     }
     """
     code = 2
+    message = 'Validate Error'
 
 
 class QueryParseError(APIError):
@@ -60,3 +61,13 @@ class QueryParseError(APIError):
     @apiError 3 Query解析错误
     """
     code = 3
+    message = 'Query Parse Error'
+
+
+class InvalidCORSRequestError(APIError):
+    """
+    @apiDefine InvalidCORSRequestError
+    @apiError 4 无效的CORS请求
+    """
+    code = 4
+    message = 'Invalid CORS Request'

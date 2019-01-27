@@ -42,6 +42,34 @@ class BaseTestCase(AppTestCase):
         self.assertEqual(status_code, 511)
         self.assertEqual(data, 'hi')
 
+    def test_return_str_with_empty_headers(self):
+        """测试返回字符串+空响应头"""
+
+        class Ret(APIView):
+            def get(self):
+                return 'hi', {}
+
+        self.app.add_url_rule('/', methods=['GET'], view_func=Ret.as_view('ret'))
+        data, headers, status_code = self.get(url_for('ret'))
+        self.assertEqual(status_code, 200)
+        self.assertEqual(data, 'hi')
+        self.assertEqual(3, len(headers))  # 没有额外的头，只有Content-Type/Content-Length/Access-Control-Allow-Origin
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))  # 不会覆盖掉api_cors处理的头
+
+    def test_return_str_with_empty_headers2(self):
+        """测试返回字符串+空响应头（另一种响应头形式）"""
+
+        class Ret(APIView):
+            def get(self):
+                return 'hi', []
+
+        self.app.add_url_rule('/', methods=['GET'], view_func=Ret.as_view('ret'))
+        data, headers, status_code = self.get(url_for('ret'))
+        self.assertEqual(status_code, 200)
+        self.assertEqual(data, 'hi')
+        self.assertEqual(3, len(headers))  # 没有额外的头，只有Content-Type/Content-Length/Access-Control-Allow-Origin
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))  # 不会覆盖掉api_cors处理的头
+
     def test_return_str_with_headers(self):
         """测试返回字符串+响应头"""
 
@@ -54,11 +82,7 @@ class BaseTestCase(AppTestCase):
         self.assertEqual(status_code, 200)
         self.assertEqual(data, 'hi')
         self.assertEqual(headers.get('XXX'), 'x')
-        # 不会覆盖掉api_cors处理的头
-        self.assertEqual(
-            headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
-        )
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))  # 不会覆盖掉api_cors处理的头
 
     def test_return_str_with_headers2(self):
         """测试返回字符串+响应头（另一种响应头形式）"""
@@ -72,11 +96,7 @@ class BaseTestCase(AppTestCase):
         self.assertEqual(status_code, 200)
         self.assertEqual(data, 'hi')
         self.assertEqual(headers.get('XXX'), 'x')
-        # 不会覆盖掉api_cors处理的头
-        self.assertEqual(
-            headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
-        )
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))  # 不会覆盖掉api_cors处理的头
 
     def test_return_str_with_status_and_headers(self):
         """测试返回字符串+状态码+响应头"""
@@ -90,11 +110,7 @@ class BaseTestCase(AppTestCase):
         self.assertEqual(status_code, 511)
         self.assertEqual(data, 'hi')
         self.assertEqual(headers.get('XXX'), 'x')
-        # 不会覆盖掉api_cors处理的头
-        self.assertEqual(
-            headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
-        )
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))  # 不会覆盖掉api_cors处理的头
 
     def test_return_str_with_status_and_headers2(self):
         """测试返回字符串+状态码+响应头（另一种响应头形式）"""
@@ -108,11 +124,7 @@ class BaseTestCase(AppTestCase):
         self.assertEqual(status_code, 511)
         self.assertEqual(data, 'hi')
         self.assertEqual(headers.get('XXX'), 'x')
-        # 不会覆盖掉api_cors处理的头
-        self.assertEqual(
-            headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
-        )
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))  # 不会覆盖掉api_cors处理的头
 
     def test_return_list(self):
         """测试返回列表"""
@@ -149,12 +161,9 @@ class BaseTestCase(AppTestCase):
 
         self.app.add_url_rule('/', methods=['GET'], view_func=Ret.as_view('ret'))
 
-        data, headers, status_code = self.get(url_for('ret'), headers={
-            'Origin': 'https://example.com'
-        })
+        data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(status_code, 200)
         self.assertEqual(headers.get('XXX'), 'x')
-        # todo: 如下修改所有不会覆盖掉头的测试
         self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))  # 不会覆盖掉api_cors处理的头
         self.assertEqual(data[0], 1)
         self.assertEqual(data[1], 2)
@@ -170,11 +179,7 @@ class BaseTestCase(AppTestCase):
         data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(status_code, 200)
         self.assertEqual(headers.get('XXX'), 'x')
-        # 不会覆盖掉api_cors处理的头
-        self.assertEqual(
-            headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
-        )
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))  # 不会覆盖掉api_cors处理的头
         self.assertEqual(data[0], 1)
         self.assertEqual(data[1], 2)
 
@@ -189,11 +194,7 @@ class BaseTestCase(AppTestCase):
         data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(status_code, 511)
         self.assertEqual(headers.get('XXX'), 'x')
-        # 不会覆盖掉api_cors处理的头
-        self.assertEqual(
-            headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
-        )
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))  # 不会覆盖掉api_cors处理的头
         self.assertEqual(data[0], 1)
         self.assertEqual(data[1], 2)
 
@@ -208,11 +209,7 @@ class BaseTestCase(AppTestCase):
         data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(status_code, 511)
         self.assertEqual(headers.get('XXX'), 'x')
-        # 不会覆盖掉api_cors处理的头
-        self.assertEqual(
-            headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
-        )
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))  # 不会覆盖掉api_cors处理的头
         self.assertEqual(data[0], 1)
         self.assertEqual(data[1], 2)
 
@@ -251,12 +248,7 @@ class BaseTestCase(AppTestCase):
         data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(status_code, 200)
         self.assertEqual(headers.get('XXX'), 'x')
-        print(headers)
-        # 不会覆盖掉api_cors处理的头
-        self.assertEqual(
-            headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
-        )
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))  # 不会覆盖掉api_cors处理的头
         self.assertEqual(data['hi'], 123)
 
     def test_return_dict_with_headers2(self):
@@ -270,11 +262,7 @@ class BaseTestCase(AppTestCase):
         data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(status_code, 200)
         self.assertEqual(headers.get('XXX'), 'x')
-        # 不会覆盖掉api_cors处理的头
-        self.assertEqual(
-            headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
-        )
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))  # 不会覆盖掉api_cors处理的头
         self.assertEqual(data['hi'], 123)
 
     def test_return_dict_with_status_and_headers(self):
@@ -288,11 +276,7 @@ class BaseTestCase(AppTestCase):
         data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(status_code, 511)
         self.assertEqual(headers.get('XXX'), 'x')
-        # 不会覆盖掉api_cors处理的头
-        self.assertEqual(
-            headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
-        )
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))  # 不会覆盖掉api_cors处理的头
         self.assertEqual(data['hi'], 123)
 
     def test_return_dict_with_status_and_headers2(self):
@@ -306,11 +290,7 @@ class BaseTestCase(AppTestCase):
         data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(status_code, 511)
         self.assertEqual(headers.get('XXX'), 'x')
-        # 不会覆盖掉api_cors处理的头
-        self.assertEqual(
-            headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
-        )
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))  # 不会覆盖掉api_cors处理的头
         self.assertEqual(data['hi'], 123)
 
     def test_return_base_error(self):
@@ -379,11 +359,7 @@ class BaseTestCase(AppTestCase):
         self.assertEqual(data['code'], Err.code)
         self.assertEqual(data['message'], Err.message)
         self.assertEqual(headers.get('XXX'), 'x')
-        # 不会覆盖掉api_cors处理的头
-        self.assertEqual(
-            headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
-        )
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))  # 不会覆盖掉api_cors处理的头
 
     def test_return_error_with_headers2(self):
         """测试返回错误+响应头（另一种响应头形式）"""
@@ -403,11 +379,7 @@ class BaseTestCase(AppTestCase):
         self.assertEqual(data['code'], Err.code)
         self.assertEqual(data['message'], Err.message)
         self.assertEqual(headers.get('XXX'), 'x')
-        # 不会覆盖掉api_cors处理的头
-        self.assertEqual(
-            headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
-        )
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))  # 不会覆盖掉api_cors处理的头
 
     def test_return_error_with_status_and_headers(self):
         """测试返回错误+状态码+响应头"""
@@ -428,11 +400,7 @@ class BaseTestCase(AppTestCase):
         self.assertEqual(data['code'], Err.code)
         self.assertEqual(data['message'], Err.message)
         self.assertEqual(headers.get('XXX'), 'x')
-        # 不会覆盖掉api_cors处理的头
-        self.assertEqual(
-            headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
-        )
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))  # 不会覆盖掉api_cors处理的头
 
     def test_return_api_response(self):
         """测试返回APIResponse"""
@@ -476,11 +444,7 @@ class BaseTestCase(AppTestCase):
         self.assertEqual(status_code, 200)
         self.assertEqual(data, {'hi': 123})
         self.assertEqual(headers.get('XXX'), 'x')
-        # 不会覆盖掉api_cors处理的头
-        self.assertEqual(
-            headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
-        )
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))  # 不会覆盖掉api_cors处理的头
 
     def test_return_api_response_with_headers2(self):
         """测试返回APIResponse+响应头（另一种响应头形式）"""
@@ -496,11 +460,7 @@ class BaseTestCase(AppTestCase):
         self.assertEqual(status_code, 200)
         self.assertEqual(data, {'hi': 123})
         self.assertEqual(headers.get('XXX'), 'x')
-        # 不会覆盖掉api_cors处理的头
-        self.assertEqual(
-            headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
-        )
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))  # 不会覆盖掉api_cors处理的头
 
     def test_return_api_response_with_status_and_headers(self):
         """测试返回APIResponse+状态码+响应头"""
@@ -516,11 +476,7 @@ class BaseTestCase(AppTestCase):
         self.assertEqual(status_code, 511)
         self.assertEqual(data, {'hi': 123})
         self.assertEqual(headers.get('XXX'), 'x')
-        # 不会覆盖掉api_cors处理的头
-        self.assertEqual(
-            headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
-        )
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))  # 不会覆盖掉api_cors处理的头
 
     def test_return_api_response_with_status_and_headers2(self):
         """测试返回APIResponse+状态码+响应头（另一种响应头形式）"""
@@ -536,8 +492,4 @@ class BaseTestCase(AppTestCase):
         self.assertEqual(status_code, 511)
         self.assertEqual(data, {'hi': 123})
         self.assertEqual(headers.get('XXX'), 'x')
-        # 不会覆盖掉api_cors处理的头
-        self.assertEqual(
-            headers.get('Access-Control-Expose-Headers'),
-            'X-PAGINATION-PAGE, X-PAGINATION-LIMIT, X-PAGINATION-COUNT, X-PAGINATION-PAGE-COUNT'
-        )
+        self.assertEqual('*', headers.get('Access-Control-Allow-Origin'))  # 不会覆盖掉api_cors处理的头

@@ -12,14 +12,14 @@ class PaginationTestCase(AppTestCase):
 
         class Ret(APIView):
             def get(self):
-                return Pagination([1, 2], count=101, page=2, limit=10)
+                return Pagination().set_data([1, 2], 101)
 
         self.app.add_url_rule('/', methods=['GET'], view_func=Ret.as_view('ret'))
         data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(status_code, 200)
         self.assertEqual(headers.get('X-Pagination-Count'), '101')
         self.assertEqual(headers.get('X-Pagination-Limit'), '10')
-        self.assertEqual(headers.get('X-Pagination-Page'), '2')
+        self.assertEqual(headers.get('X-Pagination-Page'), '1')
         self.assertEqual(headers.get('X-Pagination-Page-Count'), '11')
         self.assertEqual(data[0], 1)
         self.assertEqual(data[1], 2)
@@ -29,14 +29,14 @@ class PaginationTestCase(AppTestCase):
 
         class Ret(APIView):
             def get(self):
-                return Pagination([1, 2], count=100, page=2, limit=10, status_code=511)
+                return Pagination(status_code=511).set_data([1, 2], 100)
 
         self.app.add_url_rule('/', methods=['GET'], view_func=Ret.as_view('ret'))
         data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(status_code, 511)
         self.assertEqual(headers.get('X-Pagination-Count'), '100')
         self.assertEqual(headers.get('X-Pagination-Limit'), '10')
-        self.assertEqual(headers.get('X-Pagination-Page'), '2')
+        self.assertEqual(headers.get('X-Pagination-Page'), '1')
         self.assertEqual(headers.get('X-Pagination-Page-Count'), '10')
         self.assertEqual(data[0], 1)
         self.assertEqual(data[1], 2)
@@ -46,14 +46,14 @@ class PaginationTestCase(AppTestCase):
 
         class Ret(APIView):
             def get(self):
-                return Pagination([1, 2], count=99, page=2, limit=10, headers={'AAA': 'a', 'bbb': 'B'})
+                return Pagination(headers={'AAA': 'a', 'bbb': 'B'}).set_data([1, 2], 99)
 
         self.app.add_url_rule('/', methods=['GET'], view_func=Ret.as_view('ret'))
         data, headers, status_code = self.get(url_for('ret'))
         self.assertEqual(status_code, 200)
         self.assertEqual(headers.get('X-Pagination-Count'), '99')
         self.assertEqual(headers.get('X-Pagination-Limit'), '10')
-        self.assertEqual(headers.get('X-Pagination-Page'), '2')
+        self.assertEqual(headers.get('X-Pagination-Page'), '1')
         self.assertEqual(headers.get('X-Pagination-Page-Count'), '10')
         self.assertEqual(headers.get('AAA'), 'a')
         self.assertEqual(headers.get('bbb'), 'B')
@@ -61,12 +61,11 @@ class PaginationTestCase(AppTestCase):
         self.assertEqual(data[1], 2)
 
     def test_pagination_class(self):
-        """测试get_pagination()时Pagination()字段获取page，limit"""
+        """测试Pagination，设置头和data"""
 
         class Ret(APIView):
             def get(self):
-                self.get_pagination()
-                return Pagination([1, 2], count=101)
+                return Pagination().set_data([1, 2], 101)
 
         self.app.add_url_rule('/', methods=['GET'], view_func=Ret.as_view('ret'))
         data, headers, status_code = self.get(url_for('ret'), query_string={'page': 2, 'limit': 100})
@@ -78,41 +77,30 @@ class PaginationTestCase(AppTestCase):
         self.assertEqual(data[0], 1)
         self.assertEqual(data[1], 2)
 
-    def test_pagination_class_without_get_pagination(self):
-        """测试get_pagination()时Pagination()字段获取page，limit"""
-
-        class Ret(APIView):
-            def get(self):
-                return Pagination([1, 2], count=100)
-
-        self.app.add_url_rule('/', methods=['GET'], view_func=Ret.as_view('ret'))
-        data, headers, status_code = self.get(url_for('ret'))
-        self.assertEqual(status_code, 500)
-
     def test_get_pagination(self):
-        """测试get_pagination()"""
+        """测试从Query中获取的分页参数"""
 
         class Ret(APIView):
             def get(self):
-                pagination = self.get_pagination()
-                return {'skip': pagination[0], 'limit': pagination[1], 'page': pagination[2]}
+                p = Pagination()
+                return {'skip': p.skip, 'limit': p.limit, 'page': p.page}
 
         self.app.add_url_rule('/', methods=['GET'], view_func=Ret.as_view('ret'))
-        data, headers, status_code = self.get(url_for('ret'), query_string={'page': 3, 'limit': 3})
+        data, headers, status_code = self.get(url_for('ret'), query_string={'page': 2, 'limit': 100})
         self.assertEqual(status_code, 200)
-        self.assertEqual(data['page'], 3)
-        self.assertEqual(data['limit'], 3)
-        self.assertEqual(data['skip'], 6)
+        self.assertEqual(data['page'], 2)
+        self.assertEqual(data['limit'], 100)
+        self.assertEqual(data['skip'], 100)
 
     def test_get_pagination_custom_key(self):
-        """测试get_pagination()自定义query中的key"""
+        """测试从Query中获取分页参数的自定义query中的key"""
         self.app.config['APIKIT_PAGINATION_PAGE_KEY'] = 'xpage'
         self.app.config['APIKIT_PAGINATION_LIMIT_KEY'] = 'xlimit'
 
         class Ret(APIView):
             def get(self):
-                pagination = self.get_pagination()
-                return {'skip': pagination[0], 'limit': pagination[1], 'page': pagination[2]}
+                p = Pagination()
+                return {'skip': p.skip, 'limit': p.limit, 'page': p.page}
 
         self.app.add_url_rule('/', methods=['GET'], view_func=Ret.as_view('ret'))
 
@@ -130,12 +118,12 @@ class PaginationTestCase(AppTestCase):
         self.assertEqual(data['skip'], 6)
 
     def test_get_pagination_min_page(self):
-        """测试get_pagination()页数限制"""
+        """测试从Query中获取分页参数的页数限制"""
 
         class Ret(APIView):
             def get(self):
-                pagination = self.get_pagination()
-                return {'skip': pagination[0], 'limit': pagination[1], 'page': pagination[2]}
+                p = Pagination()
+                return {'skip': p.skip, 'limit': p.limit, 'page': p.page}
 
         self.app.add_url_rule('/', methods=['GET'], view_func=Ret.as_view('ret'))
 
@@ -153,12 +141,12 @@ class PaginationTestCase(AppTestCase):
         self.assertEqual(data['skip'], 0)
 
     def test_get_pagination_default_max_limit(self):
-        """测试get_pagination()默认最大限制"""
+        """测试从Query中获取分页参数的默认最大限制"""
 
         class Ret(APIView):
             def get(self):
-                pagination = self.get_pagination()
-                return {'skip': pagination[0], 'limit': pagination[1], 'page': pagination[2]}
+                p = Pagination()
+                return {'skip': p.skip, 'limit': p.limit, 'page': p.page}
 
         self.app.add_url_rule('/', methods=['GET'], view_func=Ret.as_view('ret'))
         data, headers, status_code = self.get(url_for('ret'), query_string={'page': 2, 'limit': 2000})
@@ -168,13 +156,13 @@ class PaginationTestCase(AppTestCase):
         self.assertEqual(data['skip'], 100)
 
     def test_get_pagination_custom_max_limit(self):
-        """测试get_pagination()自定义最大限制"""
+        """测试从Query中获取分页参数的自定义最大限制"""
         self.app.config['APIKIT_PAGINATION_MAX_LIMIT'] = 1000
 
         class Ret(APIView):
             def get(self):
-                pagination = self.get_pagination()
-                return {'skip': pagination[0], 'limit': pagination[1], 'page': pagination[2]}
+                p = Pagination()
+                return {'skip': p.skip, 'limit': p.limit, 'page': p.page}
 
         self.app.add_url_rule('/', methods=['GET'], view_func=Ret.as_view('ret'))
         data, headers, status_code = self.get(url_for('ret'), query_string={'page': 2, 'limit': 2000})
@@ -184,12 +172,12 @@ class PaginationTestCase(AppTestCase):
         self.assertEqual(data['skip'], 1000)
 
     def test_get_pagination_default_default_limit(self):
-        """测试get_pagination()默认默认限制"""
+        """测试从Query中获取分页参数的默认默认限制"""
 
         class Ret(APIView):
             def get(self):
-                pagination = self.get_pagination()
-                return {'skip': pagination[0], 'limit': pagination[1], 'page': pagination[2]}
+                p = Pagination()
+                return {'skip': p.skip, 'limit': p.limit, 'page': p.page}
 
         self.app.add_url_rule('/', methods=['GET'], view_func=Ret.as_view('ret'))
 
@@ -213,13 +201,13 @@ class PaginationTestCase(AppTestCase):
         self.assertEqual(data['skip'], 10)
 
     def test_get_pagination_custom_default_limit(self):
-        """测试get_pagination()自定义默认限制"""
+        """测试从Query中获取分页参数的自定义默认限制"""
         self.app.config['APIKIT_PAGINATION_DEFAULT_LIMIT'] = 20
 
         class Ret(APIView):
             def get(self):
-                pagination = self.get_pagination()
-                return {'skip': pagination[0], 'limit': pagination[1], 'page': pagination[2]}
+                p = Pagination()
+                return {'skip': p.skip, 'limit': p.limit, 'page': p.page}
 
         self.app.add_url_rule('/', methods=['GET'], view_func=Ret.as_view('ret'))
 

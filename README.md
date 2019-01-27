@@ -144,12 +144,12 @@ from flask_apikit.responses import Pagination
 
 class PageAPI(APIView):
     def get(self):
-        p = self.get_pagination()
+        p = Pagination()
         # 某种查询语句
-        data = query_db('XXX').skip(p['skip']).limit(p['limit'])
-        total = query_db('XXX').count()
+        data = query_db('XXX').skip(p.skip).limit(p.limit)
+        count = query_db('XXX').count()
         # 返回数据
-        return Pagination(data, total)
+        return p.set_data(data, count)
 ```
 
 请求将会返回如下：
