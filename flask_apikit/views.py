@@ -102,7 +102,7 @@ class APIView(MethodView):
         :return:
         """
         # 从request获取args
-        query_data = dict(request.args)
+        query_data = request.args.to_dict(flat=False)
         for key in query_data:
             # 如果提供了解析器，则通过其转换数据
             if parsers and key in parsers:
