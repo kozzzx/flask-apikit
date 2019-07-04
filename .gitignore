@@ -98,3 +98,6 @@ ENV/
 *.iml
 out
 gen
+
+# VSCode project files
+/.vscode
