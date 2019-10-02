@@ -63,11 +63,3 @@ class QueryParseError(APIError):
     code = 3
     message = 'Query Parse Error'
 
-
-class InvalidCORSRequestError(APIError):
-    """
-    @apiDefine InvalidCORSRequestError
-    @apiError 4 无效的CORS请求
-    """
-    code = 4
-    message = 'Invalid CORS Request'

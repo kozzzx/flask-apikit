@@ -2,7 +2,7 @@ from functools import wraps
 
 from flask import jsonify, make_response, request, current_app, Response
 
-from flask_apikit.exceptions import APIError, InvalidCORSRequestError
+from flask_apikit.exceptions import APIError
 from flask_apikit.responses import APIResponse
 
 
@@ -10,7 +10,8 @@ def api_cors(func):
     """
     处理Response的CORS响应头， 返回一个Response对象
 
-    See also: [CORS Server Flowchart](https://www.html5rocks.com/static/images/cors_server_flowchart.png)
+    See also：[MDN CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
+    See also：[CORS Server Flowchart](https://www.html5rocks.com/static/images/cors_server_flowchart.png)
     """
 
     @wraps(func)
@@ -21,10 +22,10 @@ def api_cors(func):
             options_resp = current_app.make_default_options_response()
             return options_resp.headers.get('allow')
 
-        # 请求不含有Origin，则不进行CORS处理
+        # 请求不含有Origin，则直接返回，不进行CORS处理
         origin = request.headers.get('Origin')
         if not origin:
-            return make_response(InvalidCORSRequestError('Request need header "Origin".').to_tuple())
+            return make_response(func(*args, **kwargs))
 
         # === Preflight Request ===
         if request.method == 'OPTIONS':
@@ -60,22 +61,22 @@ def api_cors(func):
         if current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_CREDENTIALS'] is True:
             h['Access-Control-Allow-Credentials'] = 'true'
         # ==> Access-Control-Allow-Origin
-        # 是"*"通配符，允许所有Origin访问
+        # 设置为"*"，表示允许所有Origin访问
         if current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN'] == '*':
-            # 如果允许携带证书则必须返回与Origin相同的值
+            # 如果允许请求附带身份凭证则必须返回与Origin相同的值
             # See also：[MDN CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#Requests_with_credentials)
             if current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_CREDENTIALS'] is True:
                 h['Access-Control-Allow-Origin'] = origin
             # 其他情况直接返回"*"通配符
             else:
                 h['Access-Control-Allow-Origin'] = '*'
-        # 指定了其他参数
+        # 设置了其他参数
         else:
-            # ALLOW_ORIGIN是字符串，且与请求头的Origin一致
+            # 设置为字符串，表示允许一个域名，与请求头的Origin一致则返回
             if isinstance(current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN'], str):
                 if origin.lower() == current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN'].lower():
                     h['Access-Control-Allow-Origin'] = origin
-            # ALLOW_ORIGIN是列表，且包含请求头的Origin
+            # 设置为列表，表示允许多个域名，包含请求头的Origin则返回
             elif isinstance(current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN'], list):
                 if origin.lower() in [
                     o.lower() for o in current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN']
