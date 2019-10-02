@@ -101,3 +101,4 @@ gen
 
 # VSCode project files
 /.vscode
+/.pytest_cache

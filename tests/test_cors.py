@@ -35,19 +35,10 @@ class CORSTestCase(AppTestCase):
         self.assertNotIn('Access-Control-Expose-Headers', headers)
         self.assertNotIn('Access-Control-Allow-Credentials', headers)
 
-        # 当request没有提供Origin时，报错
-        # options
-        data, headers, status_code = self.options(url_for('ret'), headers={})
-        self.assertEqual(400, status_code)
-        self.assertNotIn('Access-Control-Max-Age', headers)
-        self.assertNotIn('Access-Control-Allow-Origin', headers)
-        self.assertNotIn('Access-Control-Allow-Methods', headers)
-        self.assertNotIn('Access-Control-Allow-Headers', headers)
-        self.assertNotIn('Access-Control-Expose-Headers', headers)
-        self.assertNotIn('Access-Control-Allow-Credentials', headers)
+        # 当request没有提供Origin时，则直接返回，不进行CORS处理
         # get
         data, headers, status_code = self.get(url_for('ret'), headers={})
-        self.assertEqual(400, status_code)
+        self.assertEqual(200, status_code)
         self.assertNotIn('Access-Control-Max-Age', headers)
         self.assertNotIn('Access-Control-Allow-Origin', headers)
         self.assertNotIn('Access-Control-Allow-Methods', headers)
@@ -134,15 +125,10 @@ class CORSTestCase(AppTestCase):
 
         self.app.add_url_rule('/', methods=['OPTIONS', 'PATCH', 'GET'], view_func=Ret.as_view('ret'))
 
-        # request不携带Origin，报错
-        # options
-        data, headers, status_code = self.options(url_for('ret'), headers={})
-        self.assertEqual(400, status_code)
-        self.assertNotIn('Access-Control-Allow-Origin', headers)
-        self.assertNotIn('Access-Control-Allow-Credentials', headers)
+        # request不携带Origin，则直接返回，不进行CORS处理
         # get
         data, headers, status_code = self.get(url_for('ret'), headers={})
-        self.assertEqual(400, status_code)
+        self.assertEqual(200, status_code)
         self.assertNotIn('Access-Control-Allow-Origin', headers)
         self.assertNotIn('Access-Control-Allow-Credentials', headers)
 
@@ -169,15 +155,10 @@ class CORSTestCase(AppTestCase):
 
         self.app.add_url_rule('/', methods=['OPTIONS', 'PATCH', 'GET'], view_func=Ret.as_view('ret'))
 
-        # request不携带Origin，报错
-        # options
-        data, headers, status_code = self.options(url_for('ret'), headers={})
-        self.assertEqual(400, status_code)
-        self.assertNotIn('Access-Control-Allow-Origin', headers)
-        self.assertNotIn('Access-Control-Allow-Credentials', headers)
+        # request不携带Origin，则直接返回，不进行CORS处理
         # get
         data, headers, status_code = self.get(url_for('ret'), headers={})
-        self.assertEqual(400, status_code)
+        self.assertEqual(200, status_code)
         self.assertNotIn('Access-Control-Allow-Origin', headers)
         self.assertNotIn('Access-Control-Allow-Credentials', headers)
 
@@ -219,15 +200,11 @@ class CORSTestCase(AppTestCase):
             def get(self):
                 return {}
 
-        # request不携带Origin，报错
+        # request不携带Origin，则直接返回，不进行CORS处理
         self.app.add_url_rule('/', methods=['OPTIONS', 'PATCH', 'GET'], view_func=Ret.as_view('ret'))
-        # options
-        data, headers, status_code = self.options(url_for('ret'), headers={})
-        self.assertEqual(400, status_code)
-        self.assertNotIn('Access-Control-Allow-Origin', headers)
         # get
         data, headers, status_code = self.get(url_for('ret'), headers={})
-        self.assertEqual(400, status_code)
+        self.assertEqual(200, status_code)
         self.assertNotIn('Access-Control-Allow-Origin', headers)
 
         # 携带一致的Origin，返回
@@ -268,14 +245,10 @@ class CORSTestCase(AppTestCase):
 
         self.app.add_url_rule('/', methods=['OPTIONS', 'PATCH', 'GET'], view_func=Ret.as_view('ret'))
 
-        # 请求没有Origin时，报错
-        # options
-        data, headers, status_code = self.options(url_for('ret'), headers={})
-        self.assertEqual(400, status_code)
-        self.assertNotIn('Access-Control-Allow-Origin', headers)
+        # 请求没有Origin时，则直接返回，不进行CORS处理
         # get
         data, headers, status_code = self.get(url_for('ret'), headers={})
-        self.assertEqual(400, status_code)
+        self.assertEqual(200, status_code)
         self.assertNotIn('Access-Control-Allow-Origin', headers)
 
         # Origin存在于列表中时，Allow-Origin返回相应域名

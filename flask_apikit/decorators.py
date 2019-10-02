@@ -13,15 +13,8 @@ def api_cors(func):
     See also：[MDN CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
     See also：[CORS Server Flowchart](https://www.html5rocks.com/static/images/cors_server_flowchart.png)
     """
-
     @wraps(func)
     def wrapper(*args, **kwargs):
-
-        def get_allow_methods():
-            """返回add_url_rule时定义的methods"""
-            options_resp = current_app.make_default_options_response()
-            return options_resp.headers.get('allow')
-
         # 请求不含有Origin，则直接返回，不进行CORS处理
         origin = request.headers.get('Origin')
         if not origin:
@@ -33,15 +26,16 @@ def api_cors(func):
             resp = current_app.make_default_options_response()
             h = resp.headers
             # ==> Access-Control-Allow-Methods
-            h['Access-Control-Allow-Methods'] = get_allow_methods()
+            h['Access-Control-Allow-Methods'] = resp.headers.get('allow')  # add_url_rule中定义的methods，会自动加上HEAD方法
             # ==> Access-Control-Allow-Headers
             if current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_HEADERS']:
                 h['Access-Control-Allow-Headers'] = ', '.join(
-                    x.upper() for x in current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_HEADERS']
-                )
+                    x.upper() for x in
+                    current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_HEADERS'])
             # ==> Access-Control-Max-Age
             if current_app.config['APIKIT_ACCESS_CONTROL_MAX_AGE']:
-                h['Access-Control-Max-Age'] = current_app.config['APIKIT_ACCESS_CONTROL_MAX_AGE']
+                h['Access-Control-Max-Age'] = current_app.config[
+                    'APIKIT_ACCESS_CONTROL_MAX_AGE']
         # === Actual Request ===
         else:
             resp = make_response(func(*args, **kwargs))
@@ -49,23 +43,26 @@ def api_cors(func):
             # ==> Access-Control-Expose-Headers
             if current_app.config['APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS']:
                 # 如果已有Expose-Headers，同时有值，则加一个逗号
-                if 'Access-Control-Expose-Headers' in h and h['Access-Control-Expose-Headers']:
+                if 'Access-Control-Expose-Headers' in h and h[
+                        'Access-Control-Expose-Headers']:
                     h['Access-Control-Expose-Headers'] += ', '
                 else:
                     h['Access-Control-Expose-Headers'] = ''
                 h['Access-Control-Expose-Headers'] += ', '.join(
-                    x.upper() for x in current_app.config['APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS']
-                )
+                    x.upper() for x in
+                    current_app.config['APIKIT_ACCESS_CONTROL_EXPOSE_HEADERS'])
         # === 其他公用的响应头 ===
         # ==> Access-Control-Allow-Credentials
-        if current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_CREDENTIALS'] is True:
+        if current_app.config[
+                'APIKIT_ACCESS_CONTROL_ALLOW_CREDENTIALS'] is True:
             h['Access-Control-Allow-Credentials'] = 'true'
         # ==> Access-Control-Allow-Origin
         # 设置为"*"，表示允许所有Origin访问
         if current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN'] == '*':
             # 如果允许请求附带身份凭证则必须返回与Origin相同的值
             # See also：[MDN CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#Requests_with_credentials)
-            if current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_CREDENTIALS'] is True:
+            if current_app.config[
+                    'APIKIT_ACCESS_CONTROL_ALLOW_CREDENTIALS'] is True:
                 h['Access-Control-Allow-Origin'] = origin
             # 其他情况直接返回"*"通配符
             else:
@@ -73,13 +70,19 @@ def api_cors(func):
         # 设置了其他参数
         else:
             # 设置为字符串，表示允许一个域名，与请求头的Origin一致则返回
-            if isinstance(current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN'], str):
-                if origin.lower() == current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN'].lower():
+            if isinstance(
+                    current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN'],
+                    str):
+                if origin.lower() == current_app.config[
+                        'APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN'].lower():
                     h['Access-Control-Allow-Origin'] = origin
             # 设置为列表，表示允许多个域名，包含请求头的Origin则返回
-            elif isinstance(current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN'], list):
+            elif isinstance(
+                    current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN'],
+                    list):
                 if origin.lower() in [
-                    o.lower() for o in current_app.config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN']
+                        o.lower() for o in current_app.
+                        config['APIKIT_ACCESS_CONTROL_ALLOW_ORIGIN']
                 ]:
                     h['Access-Control-Allow-Origin'] = origin
         return resp
@@ -94,7 +97,6 @@ def api_response(func):
     :param func:
     :return:
     """
-
     @wraps(func)
     def wrapper(*args, **kwargs):
         # 尝试获取response
@@ -112,7 +114,8 @@ def api_response(func):
             elif isinstance(resp, (dict, list)):
                 resp = jsonify(resp)
             # 如果是有两个元素以上的元组，且第一个值为字典或列表，则将第一个值转换为json（P.S. 后两个是状态码，HTTP头）
-            elif isinstance(resp, tuple) and len(resp) > 1 and isinstance(resp[0], (dict, list)):
+            elif isinstance(resp, tuple) and len(resp) > 1 and isinstance(
+                    resp[0], (dict, list)):
                 resp = (jsonify(resp[0]), *resp[1:])
             # APIResponse直接返回
             elif isinstance(resp, APIResponse):
