@@ -13,9 +13,7 @@ class APIView(MethodView):
     # （以防add_url_rule时methods忘记加'OPTIONS'，OPTIONS请求被Flask的dispatch_request处理）
     provide_automatic_options = False
 
-    def verify_data(self,
-                    data: dict,
-                    schema: Schema,
+    def verify_data(self, data: dict, schema: Schema,
                     context: dict = None) -> dict:
         """
         使用schema实例验证数据，有错误时抛出ValidateError
@@ -31,6 +29,9 @@ class APIView(MethodView):
         try:
             data = schema.load(data)
         except ValidationError as e:
+            # 合并多个验证器对于同一字段的相同错误
+            for key in e.messages.keys():
+                e.messages[key] = list(set(e.messages[key]))
             raise ValidateError(e.messages, replace=True)
         return data
 
@@ -38,7 +39,8 @@ class APIView(MethodView):
                  schema: Schema = None,
                  context: dict = None,
                  additional_data: dict = None,
-                 *args, **kwargs) -> dict:
+                 *args,
+                 **kwargs) -> dict:
         """
         从request获取json数据，没有则返回空字典
         可以使用一个验证器进行数据验证
@@ -111,7 +113,9 @@ class APIView(MethodView):
                 if isinstance(parser, list):
                     # 如果解析器是个列表，使用parser[0]进行处理
                     if len(parser) > 0:
-                        query_data[key] = [parser[0](data) for data in query_data[key]]
+                        query_data[key] = [
+                            parser[0](data) for data in query_data[key]
+                        ]
                 # 直接使用parser进行处理
                 else:
                     query_data[key] = parser(query_data[key][0])
@@ -128,4 +132,3 @@ class APIView(MethodView):
         else:
             data = query_data
         return data
-

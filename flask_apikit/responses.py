@@ -3,6 +3,7 @@ from flask import current_app, jsonify, request
 
 
 class APIResponse:
+    """基础的API响应"""
     def __init__(self, data, status_code=200, headers=None):
         self.data = data
         self.status_code = status_code
@@ -14,16 +15,15 @@ class APIResponse:
 
 
 class Pagination(APIResponse):
-    def __init__(
-            self,
-            default_limit: int = None,
-            max_limit: int = None,
-            page_key: str = None,
-            limit_key: str = None,
-            status_code: int = 200,
-            headers: dict = None,
-            auto_expose_headers=True
-    ):
+    """分页的API响应"""
+    def __init__(self,
+                 default_limit: int = None,
+                 max_limit: int = None,
+                 page_key: str = None,
+                 limit_key: str = None,
+                 status_code: int = 200,
+                 headers: dict = None,
+                 auto_expose_headers=True):
         """
         :param default_limit: 请求中没有“每页条目数”参数时，则使用此值（为None则使用插件配置的值）
         :param max_limit: “每页最大条目数”，为0则不限制（为None则使用插件配置的值）
@@ -37,22 +37,22 @@ class Pagination(APIResponse):
         # 默认值
         self.count = 0
         # 从query中获取分页参数
-        self._parse_query(
-            default_limit=default_limit,
-            max_limit=max_limit,
-            page_key=page_key,
-            limit_key=limit_key
-        )
+        self._parse_query(default_limit=default_limit,
+                          max_limit=max_limit,
+                          page_key=page_key,
+                          limit_key=limit_key)
         # 自动加入分页所用的 Access-Control-Expose-Headers
         if headers is None:
             headers = {}
         if auto_expose_headers:
             # 如果已有Expose-Headers，同时有值，则将其全部大小并加一个逗号
-            if 'Access-Control-Expose-Headers' in headers and headers['Access-Control-Expose-Headers']:
+            if 'Access-Control-Expose-Headers' in headers and headers[
+                    'Access-Control-Expose-Headers']:
                 headers['Access-Control-Expose-Headers'] += ', '
             else:
                 headers['Access-Control-Expose-Headers'] = ''
-            headers['Access-Control-Expose-Headers'] += ', '.join(x.upper() for x in [
+            headers['Access-Control-Expose-Headers'] += ', '.join(x.upper(
+            ) for x in [
                 current_app.config['APIKIT_PAGINATION_HEADER_PAGE_KEY'],
                 current_app.config['APIKIT_PAGINATION_HEADER_LIMIT_KEY'],
                 current_app.config['APIKIT_PAGINATION_HEADER_COUNT_KEY'],
@@ -66,13 +66,11 @@ class Pagination(APIResponse):
         self._set_pagination_headers()
         return self
 
-    def _parse_query(
-            self,
-            default_limit: int = None,
-            max_limit: int = None,
-            page_key: str = None,
-            limit_key: str = None
-    ):
+    def _parse_query(self,
+                     default_limit: int = None,
+                     max_limit: int = None,
+                     page_key: str = None,
+                     limit_key: str = None):
         """
         从request.args中获取分页数据，并返回(skip, limit, page)
 
@@ -84,7 +82,8 @@ class Pagination(APIResponse):
         """
         # 获取配置
         if default_limit is None:
-            default_limit = current_app.config['APIKIT_PAGINATION_DEFAULT_LIMIT']
+            default_limit = current_app.config[
+                'APIKIT_PAGINATION_DEFAULT_LIMIT']
         if max_limit is None:
             max_limit = current_app.config['APIKIT_PAGINATION_MAX_LIMIT']
         if page_key is None:
@@ -107,7 +106,12 @@ class Pagination(APIResponse):
 
     def _set_pagination_headers(self):
         """设置分页头"""
-        self.headers[current_app.config['APIKIT_PAGINATION_HEADER_PAGE_KEY']] = self.page
-        self.headers[current_app.config['APIKIT_PAGINATION_HEADER_LIMIT_KEY']] = self.limit
-        self.headers[current_app.config['APIKIT_PAGINATION_HEADER_COUNT_KEY']] = self.count
-        self.headers[current_app.config['APIKIT_PAGINATION_HEADER_PAGE_COUNT_KEY']] = math.ceil(self.count / self.limit)
+        self.headers[current_app.
+                     config['APIKIT_PAGINATION_HEADER_PAGE_KEY']] = self.page
+        self.headers[current_app.
+                     config['APIKIT_PAGINATION_HEADER_LIMIT_KEY']] = self.limit
+        self.headers[current_app.
+                     config['APIKIT_PAGINATION_HEADER_COUNT_KEY']] = self.count
+        self.headers[current_app.config[
+            'APIKIT_PAGINATION_HEADER_PAGE_COUNT_KEY']] = math.ceil(
+                self.count / self.limit)
