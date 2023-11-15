@@ -20,7 +20,7 @@ setup(
     zip_safe=False,
     platforms='any',
     install_requires=[
-        'Flask>=1.0', 'marshmallow==3.0.0b8'
+        'Flask>=1.0', 'marshmallow==3.0.0b20'
     ],
     classifiers=[
         'Environment :: Web Environment',
